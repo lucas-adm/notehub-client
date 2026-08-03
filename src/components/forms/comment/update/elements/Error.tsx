@@ -12,11 +12,14 @@ export const Error = ({ field, ...rest }: ErrorProps) => {
 
     if (error) return (
         <p
+            data-testid={`error-${field}`}
             className="w-full pl-1 text-sm font-medium dark:text-red-500 text-red-600"
             {...rest}
         >
             {error.toString()}
         </p>
     )
+
+    return null;
 
 }
