@@ -100,3 +100,11 @@ export function toSpecificTime(dateStr: string): string {
     const monthAbbr = monthAbbrs[monthNumber - 1] || "";
     return `${dayNumber} de ${monthAbbr} de ${fullYear}`;
 }
+
+export function toISODate(dateString: string): string {
+    const [datePart, timePart] = dateString.trim().split(" ");
+    const [day, month, year] = datePart.split("/").map(Number);
+    const [hour, minute] = timePart.split(":").map(Number);
+    const fullYear = 2000 + year;
+    return `${fullYear}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`;
+}
