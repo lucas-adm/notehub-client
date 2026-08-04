@@ -1,4 +1,4 @@
-import { RegisterPage } from '../../../pages/auth/sginup/signup.page';
+import { RegisterPage } from '../../../pages/auth/signup/signup.page';
 import { seedUsers } from '../../../fixtures';
 import { test, expect } from '@playwright/test';
 import type { CreateUserFormData } from '@/core';
