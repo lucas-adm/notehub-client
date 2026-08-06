@@ -10,10 +10,10 @@ test.describe('Search - notes sorting and filtering', () => {
 
     test('search for "note" should display only notes that contain the term', async ({ page }) => {
         const searchPage = new SearchNotesPage(page);
-        await searchPage.waitForNotesResponse(() => searchPage.search('note'));
-        const texts = await searchPage.getArticlesText();
+        await searchPage.waitForNotesResponse(() => searchPage.search('notea'));
+        const texts = await searchPage.getArticlesTitles();
         expect(texts.length).toBeGreaterThan(0);
-        for (const text of texts) expect(text.toLowerCase()).toContain('note');
+        for (const text of texts) expect(text.toLowerCase()).toContain('notea');
     })
 
     test('sort by "Recent" should display the newest note first', async ({ page }) => {
