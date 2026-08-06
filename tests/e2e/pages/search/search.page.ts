@@ -50,10 +50,18 @@ export class SearchPage {
     }
 
     async expectParams(expected: Record<string, string | null>) {
-        const url = new URL(this.page.url());
         for (const [key, value] of Object.entries(expected)) {
-            if (value === null) expect(url.searchParams.has(key)).toBeFalsy();
-            else expect(url.searchParams.get(key)).toBe(value);
+            if (value === null) {
+                await expect.poll(() => {
+                    const url = new URL(this.page.url());
+                    return url.searchParams.has(key);
+                }).toBeFalsy();
+            } else {
+                await expect.poll(() => {
+                    const url = new URL(this.page.url());
+                    return url.searchParams.get(key);
+                }).toBe(value);
+            }
         }
     }
 
