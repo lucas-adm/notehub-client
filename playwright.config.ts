@@ -2,21 +2,41 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
 
-    testDir: './tests/e2e/tests',
-    fullyParallel: true,
+    testDir: './tests/e2e',
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 1 : 0,
-    reporter: 'html',
+    outputDir: 'playwright/test-results',
+    reporter: [
+        ['html', { outputFolder: 'playwright/playwright-report' }]
+    ],
 
     use: {
         baseURL: 'http://localhost:3000',
         trace: 'on-first-retry',
+        screenshot: 'only-on-failure',
     },
 
     projects: [
         {
-            name: 'chromium',
+            name: 'setup',
+            testMatch: '**/*.setup.ts',
+            fullyParallel: true,
+        },
+        {
+            name: 'authenticated',
+            use: {
+                ...devices['Desktop Chrome'],
+                storageState: 'playwright/.auth/user.json',
+            },
+            dependencies: ['setup'],
+            testMatch: '**/*.auth.spec.ts',
+            fullyParallel: false,
+        },
+        {
+            name: 'unauthenticated',
             use: { ...devices['Desktop Chrome'] },
+            testMatch: '**/*.unauth.spec.ts',
+            fullyParallel: true,
         },
     ],
 
