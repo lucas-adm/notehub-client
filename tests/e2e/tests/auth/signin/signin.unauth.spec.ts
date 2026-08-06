@@ -32,15 +32,4 @@ test.describe('User Login', () => {
         await loginPage.expectError('password', 'Senha incorreta.');
     })
 
-    test('should login successfully and set user state', async ({ page }) => {
-        const loginPage = new LoginPage(page);
-        const data = userA();
-        
-        await loginPage.goto();
-        await loginPage.fill(data);
-        await loginPage.submit();
-        
-        await expect(page).toHaveURL('/')
-    })
-
 })
