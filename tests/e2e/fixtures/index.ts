@@ -1,2 +1,2 @@
-export { seedUsers } from './seed-users';
-export { seedNotes } from './seed-notes';
+export * from './auth';
+export * from './seeds';
