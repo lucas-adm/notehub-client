@@ -18,17 +18,10 @@ export default defineConfig({
 
     projects: [
         {
-            name: 'setup',
-            testMatch: '**/*.setup.ts',
-            fullyParallel: true,
-        },
-        {
             name: 'authenticated',
             use: {
                 ...devices['Desktop Chrome'],
-                storageState: 'playwright/.auth/user.json',
             },
-            dependencies: ['setup'],
             testMatch: '**/*.auth.spec.ts',
             fullyParallel: false,
         },

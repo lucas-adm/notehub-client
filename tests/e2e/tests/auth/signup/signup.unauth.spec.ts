@@ -1,6 +1,6 @@
+import { expect, test } from '../../../fixtures';
 import { RegisterPage } from '../../../pages/auth/signup/signup.page';
-import { seedUsers } from '../../../fixtures';
-import { test, expect } from '@playwright/test';
+import { seedUsers } from '../../../fixtures/seeds';
 import type { CreateUserFormData } from '@/core';
 
 const userX = (overrides?: Partial<CreateUserFormData>): CreateUserFormData => ({
