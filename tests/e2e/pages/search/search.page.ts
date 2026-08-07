@@ -1,8 +1,10 @@
 import { Page, Locator, expect } from '@playwright/test';
+import { Sidebar } from '../../components/sidebar.component';
 
 export class SearchPage {
 
     readonly page: Page;
+    readonly sidebar: Sidebar;
     readonly searchInput: Locator;
     readonly relevanceSorter: Locator;
     readonly recentSorter: Locator;
@@ -13,6 +15,7 @@ export class SearchPage {
 
     constructor(page: Page) {
         this.page = page;
+        this.sidebar = new Sidebar(page);
         this.searchInput = page.getByPlaceholder('Pesquisar');
         this.relevanceSorter = page.getByRole('button', { name: 'Relevância' });
         this.recentSorter = page.getByRole('button', { name: 'Recente' });
@@ -22,8 +25,13 @@ export class SearchPage {
         this.usersSorter = page.getByRole('button', { name: 'Pessoas' });
     }
 
-    async goto() {
-        await this.page.goto('/search');
+    async goto(url: string) {
+        await this.page.goto(url);
+    }
+
+    async open() {
+        await this.sidebar.navigateTo('Explorar');
+        await expect(this.page).toHaveURL('/search');
     }
 
     async search(query: string) {
@@ -34,6 +42,10 @@ export class SearchPage {
     private async clickAndWaitActive(locator: Locator) {
         await locator.click();
         await expect(locator).toBeDisabled();
+    }
+
+    async sortByRelevance() {
+        await this.clickAndWaitActive(this.relevanceSorter);
     }
 
     async sortByRecent() {
