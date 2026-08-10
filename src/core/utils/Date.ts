@@ -104,7 +104,7 @@ export function toSpecificTime(dateStr: string): string {
 export function toISODate(dateString: string): string {
     const [datePart, timePart] = dateString.trim().split(" ");
     const [day, month, year] = datePart.split("/").map(Number);
-    const [hour, minute] = timePart.split(":").map(Number);
+    const [hour, minute] = timePart ? timePart.split(":").map(Number) : [0, 0];
     const fullYear = 2000 + year;
     return `${fullYear}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`;
 }
