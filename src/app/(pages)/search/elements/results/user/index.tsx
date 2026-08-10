@@ -1,5 +1,5 @@
 import { Element } from "./elements";
-import { LowDetailUser } from "@/core";
+import { LowDetailUser, toISODate } from "@/core";
 import { Toggle } from "@/components/buttons";
 import { useScreen } from "@/data/hooks";
 
@@ -22,6 +22,12 @@ export const User = ({ user, ...rest }: UserProps) => {
                 dark:bg-darker bg-lighter"
                 {...rest}
             >
+                <time dateTime={toISODate(user.created_at)} className="sr-only">
+                    {user.created_at}
+                </time>
+                <span data-testid="followers-count" className="sr-only">
+                    {user.followers_count}
+                </span>
                 <header className="relative pl-14 flex flex-col">
                     <User user={user} />
                     <Username>@{user.username}</Username>
