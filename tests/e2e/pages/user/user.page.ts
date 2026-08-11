@@ -1,0 +1,66 @@
+import { expect, Locator, Page } from '@playwright/test';
+import { seedUsers } from '../../fixtures';
+import { Sidebar } from '../../components/sidebar.component';
+
+export class UserPage {
+
+    readonly page: Page;
+    readonly sidebar: Sidebar;
+    readonly banner: Locator;
+    readonly avatar: Locator;
+    readonly about: Locator;
+    readonly notes: Locator;
+    readonly flames: Locator;
+    readonly mainSection: Locator;
+    readonly mainTitle: Locator;
+
+    constructor(page: Page) {
+        this.page = page;
+        this.sidebar = new Sidebar(page);
+        this.banner = page.getByRole('banner');
+        this.avatar = this.banner.getByRole('img', { name: `Avatar de ${seedUsers.usera.username}` });
+        this.about = page.getByRole('link', { name: 'Visão Geral' });
+        this.notes = page.getByRole('link', { name: 'Notas' });
+        this.flames = page.getByRole('link', { name: 'Chamas' });
+        this.mainSection = page.getByRole('main');
+        this.mainTitle = this.mainSection.getByRole('heading', { level: 2 });
+    }
+
+    async goto(url: string) {
+        await this.page.goto(url);
+    }
+
+    private async open() {
+        await this.sidebar.navigateTo('Você');
+        await expect(this.page).toHaveURL(seedUsers.usera.username);
+    }
+
+    private async waitForResponse(action: () => Promise<void>, url: string) {
+        const [response] = await Promise.all([
+            this.page.waitForResponse((res) =>
+                res.url().includes(url) && res.ok()),
+            action(),
+        ])
+        return response;
+    }
+
+    async openAndWaitForProfile() {
+        await this.waitForResponse(
+            () => this.open(),
+            `users/${seedUsers.usera.username}`
+        )
+    }
+
+    async expectProfileLoaded() {
+        await expect(this.banner).toBeVisible();
+        await expect(this.avatar).toBeVisible();
+        await expect(this.mainSection).toBeVisible();
+        await expect(this.mainTitle).toBeVisible();
+    }
+
+    async clickAndWaitActive(locator: Locator) {
+        await locator.click();
+        await expect(locator).toHaveAttribute('aria-current', 'page');
+    }
+
+}
