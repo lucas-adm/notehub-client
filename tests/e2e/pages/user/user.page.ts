@@ -6,6 +6,7 @@ export class UserPage {
 
     readonly page: Page;
     readonly sidebar: Sidebar;
+    readonly profile: Locator;
     readonly banner: Locator;
     readonly avatar: Locator;
     readonly about: Locator;
@@ -17,11 +18,12 @@ export class UserPage {
     constructor(page: Page) {
         this.page = page;
         this.sidebar = new Sidebar(page);
-        this.banner = page.getByRole('banner');
+        this.profile = page.locator('header');
+        this.banner = this.profile.getByRole('banner');
         this.avatar = this.banner.getByRole('img', { name: `Avatar de ${seedUsers.usera.username}` });
-        this.about = page.getByRole('link', { name: 'Visão Geral' });
-        this.notes = page.getByRole('link', { name: 'Notas' });
-        this.flames = page.getByRole('link', { name: 'Chamas' });
+        this.about = this.profile.getByRole('link', { name: 'Visão Geral' });
+        this.notes = this.profile.getByRole('link', { name: 'Notas' });
+        this.flames = this.profile.getByRole('link', { name: 'Chamas' });
         this.mainSection = page.getByRole('main');
         this.mainTitle = this.mainSection.getByRole('heading', { level: 2 });
     }
