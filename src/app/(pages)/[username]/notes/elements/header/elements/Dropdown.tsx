@@ -5,13 +5,13 @@ import { useSearchParams } from "next/navigation";
 interface DropdownProps extends React.HTMLAttributes<HTMLDivElement> {
     triggerRef: React.RefObject<HTMLButtonElement>;
     closeRef: React.RefObject<HTMLSpanElement>;
+    isOpen: boolean;
+    setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const Dropdown = ({ triggerRef, closeRef, ...rest }: DropdownProps) => {
+export const Dropdown = ({ triggerRef, closeRef, isOpen, setIsOpen, ...rest }: DropdownProps) => {
 
     const dropdownRef = useRef<HTMLDivElement>(null);
-
-    const [isOpen, setIsOpen] = useState<boolean>(false);
 
     const handleClickOnTrigger = useCallback((event: MouseEvent) => {
         if (closeRef.current && closeRef.current.contains(event.target as Node)) {
