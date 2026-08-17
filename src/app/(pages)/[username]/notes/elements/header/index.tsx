@@ -16,20 +16,20 @@ export const Header = ({ tags, ...rest }: HeaderProps) => {
     const current: boolean = username === user?.username;
 
     const typeRef = useRef<HTMLButtonElement>(null);
-    const closeTypeRef = useRef<HTMLSpanElement>(null);
+    const closeTypeRef = useRef<HTMLButtonElement>(null);
     const [isTypeOpen, setIsTypeOpen] = useState<boolean>(false);
 
     const tagRef = useRef<HTMLButtonElement>(null);
-    const closeTagRef = useRef<HTMLSpanElement>(null);
+    const closeTagRef = useRef<HTMLButtonElement>(null);
     const [isTagOpen, setIsTagOpen] = useState<boolean>(false);
 
-    const sortRef = useRef<HTMLButtonElement>(null);
-    const closeSortRef = useRef<HTMLSpanElement>(null);
-    const [isSortOpen, setIsSortOpen] = useState<boolean>(false);
-
     const orderRef = useRef<HTMLButtonElement>(null);
-    const closeOrderRef = useRef<HTMLSpanElement>(null);
+    const closeOrderRef = useRef<HTMLButtonElement>(null);
     const [isOrderOpen, setIsOrderOpen] = useState<boolean>(false);
+
+    const sortRef = useRef<HTMLButtonElement>(null);
+    const closeSortRef = useRef<HTMLButtonElement>(null);
+    const [isSortOpen, setIsSortOpen] = useState<boolean>(false);
 
     const [filteredTags, setFilteredTags] = useState<string[]>(tags);
 
@@ -44,8 +44,14 @@ export const Header = ({ tags, ...rest }: HeaderProps) => {
                 <ul className="flex items-center justify-between inlg:justify-center gap-2 flex-wrap">
                     <Element.Input placeholder="Encontrar uma nota..." />
                     <Element.Select ref={typeRef} isDropdownOpen={isTypeOpen} text="Tipo" data-testid="select-type">
-                        <Element.Dropdown triggerRef={typeRef} closeRef={closeTypeRef} isOpen={isTypeOpen} setIsOpen={setIsTypeOpen}>
-                            <Element.Summary ref={closeTypeRef} summary="Selecione o tipo" />
+                        <Element.Dropdown
+                            data-testid="type-menu"
+                            triggerRef={typeRef}
+                            closeRef={closeTypeRef}
+                            isOpen={isTypeOpen}
+                            setIsOpen={setIsTypeOpen}
+                        >
+                            <Element.Summary ref={closeTypeRef} dataTestId="close-type-menu" summary="Selecione o tipo" />
                             <ul className="flex flex-col">
                                 <Element.Option sParam="type" value={[null]} text="todos" data-testid="option-type-all" />
                                 <Element.Option sParam="type" value={["open"]} text="aberta" data-testid="option-type-open" />
@@ -55,8 +61,14 @@ export const Header = ({ tags, ...rest }: HeaderProps) => {
                         </Element.Dropdown>
                     </Element.Select>
                     <Element.Select ref={tagRef} isDropdownOpen={isTagOpen} text="Tag" data-testid="select-tag">
-                        <Element.Dropdown triggerRef={tagRef} closeRef={closeTagRef} isOpen={isTagOpen} setIsOpen={setIsTagOpen}>
-                            <Element.Summary ref={closeTagRef} summary="Selecione a tag" />
+                        <Element.Dropdown
+                            data-testid="tags-menu"
+                            triggerRef={tagRef}
+                            closeRef={closeTagRef}
+                            isOpen={isTagOpen}
+                            setIsOpen={setIsTagOpen}
+                        >
+                            <Element.Summary ref={closeTagRef} dataTestId="close-tags-menu" summary="Selecione a tag" />
                             <ul className="flex flex-col">
                                 <Element.Filter onChange={handleOnChange} />
                                 <Element.Option sParam="tag" value={[null]} text="todas" data-testid="option-tag-all" />
@@ -66,9 +78,15 @@ export const Header = ({ tags, ...rest }: HeaderProps) => {
                             </ul>
                         </Element.Dropdown>
                     </Element.Select>
-                    <Element.Select ref={sortRef} isDropdownOpen={isSortOpen} text="Ordem" data-testid="select-order">
-                        <Element.Dropdown triggerRef={sortRef} closeRef={closeSortRef} isOpen={isSortOpen} setIsOpen={setIsSortOpen}>
-                            <Element.Summary ref={closeSortRef} summary="Selecione a ordem" />
+                    <Element.Select ref={orderRef} isDropdownOpen={isOrderOpen} text="Ordem" data-testid="select-order">
+                        <Element.Dropdown
+                            data-testid="order-menu"
+                            triggerRef={orderRef}
+                            closeRef={closeOrderRef}
+                            isOpen={isOrderOpen}
+                            setIsOpen={setIsOrderOpen}
+                        >
+                            <Element.Summary ref={closeOrderRef} dataTestId="close-order-menu" summary="Selecione a ordem" />
                             <ul className="flex flex-col">
                                 <Element.Option sParam="order" value={["modifiedAt", null]} text="atualização" data-testid="option-order-modifiedAt" />
                                 <Element.Option sParam="order" value={["createdAt"]} text="criação" data-testid="option-order-createdAt" />
@@ -78,9 +96,15 @@ export const Header = ({ tags, ...rest }: HeaderProps) => {
                             </ul>
                         </Element.Dropdown>
                     </Element.Select>
-                    <Element.Select ref={orderRef} isDropdownOpen={isOrderOpen} text="Sorteio" data-testid="select-sort">
-                        <Element.Dropdown triggerRef={orderRef} closeRef={closeOrderRef} isOpen={isOrderOpen} setIsOpen={setIsOrderOpen}>
-                            <Element.Summary ref={closeOrderRef} summary="Selecione o sorteio" />
+                    <Element.Select ref={sortRef} isDropdownOpen={isSortOpen} text="Sorteio" data-testid="select-sort">
+                        <Element.Dropdown
+                            data-testid="sort-menu"
+                            triggerRef={sortRef}
+                            closeRef={closeSortRef}
+                            isOpen={isSortOpen}
+                            setIsOpen={setIsSortOpen}
+                        >
+                            <Element.Summary ref={closeSortRef} dataTestId="close-sort-menu" summary="Selecione o sorteio" />
                             <ul className="flex flex-col">
                                 <Element.Option sParam="sort" value={["desc", null]} text="decrescente" data-testid="option-sort-desc" />
                                 <Element.Option sParam="sort" value={["asc"]} text="crescente" data-testid="option-sort-asc" />

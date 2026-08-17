@@ -14,14 +14,15 @@ export const Dropdown = ({ triggerRef, closeRef, isOpen, setIsOpen, ...rest }: D
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const handleClickOnTrigger = useCallback((event: MouseEvent) => {
-        if (closeRef.current && closeRef.current.contains(event.target as Node)) {
-            return setIsOpen(false);
-        }
-        else if (dropdownRef.current && dropdownRef.current.contains(event.target as Node)) {
+        if (dropdownRef.current && dropdownRef.current.contains(event.target as Node)) {
             return setIsOpen(true);
         }
         else return setIsOpen((prev) => (!prev));
-    }, [closeRef])
+    }, [])
+
+    const handleClickOnClose = useCallback(() => {
+        return setIsOpen(false);
+    }, [])
 
     const handleClickOutsideDropdown = useCallback((event: MouseEvent) => {
         if (
@@ -71,24 +72,23 @@ export const Dropdown = ({ triggerRef, closeRef, isOpen, setIsOpen, ...rest }: D
     }, [isOpen]);
 
     useEffect(() => {
-
         const trigger = triggerRef.current;
+        const close = closeRef.current;
         if (trigger) trigger.addEventListener('click', handleClickOnTrigger);
-
+        if (close) close.addEventListener('click', handleClickOnClose);
         window.addEventListener('click', handleClickOutsideDropdown);
         window.addEventListener('keydown', handleKeydown, { passive: false });
         window.addEventListener('wheel', preventScrolling, { passive: false });
         window.addEventListener('touchmove', preventScrolling, { passive: false });
-
         return () => {
             if (trigger) trigger.removeEventListener('click', handleClickOnTrigger);
+            if (close) close.removeEventListener('click', handleClickOnClose);
             window.removeEventListener('click', handleClickOutsideDropdown);
             window.removeEventListener('keydown', handleKeydown);
             window.removeEventListener('wheel', preventScrolling);
             window.removeEventListener('touchmove', preventScrolling);
         }
-
-    }, [handleClickOnTrigger, handleClickOutsideDropdown, handleKeydown, preventScrolling, triggerRef])
+    }, [])
 
     const sParams = useSearchParams();
     useEffect(() => { return setIsOpen(false) }, [sParams])
