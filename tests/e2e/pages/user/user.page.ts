@@ -1,6 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
-import { seedUsers } from '../../fixtures';
-import { Sidebar } from '../../components/sidebar.component';
+import { seedUsers } from '../../fixtures/seeds';
+import { Sidebar } from '../../components';
 
 export class UserPage {
 

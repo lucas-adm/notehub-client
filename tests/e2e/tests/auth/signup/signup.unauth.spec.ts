@@ -1,5 +1,5 @@
-import { expect, test } from '../../../fixtures';
-import { RegisterPage } from '../../../pages/auth/signup/signup.page';
+import { expect, test } from '../../../fixtures/auth';
+import { RegisterPage } from '../../../pages';
 import { seedUsers } from '../../../fixtures/seeds';
 import type { CreateUserFormData } from '@/core';
 

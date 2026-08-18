@@ -1,4 +1,5 @@
-import { expect, seedUsers, test } from '../../../fixtures';
+import { expect, test } from '../../../fixtures/auth';
+import { seedUsers } from '../../../fixtures/seeds';
 import { UserNotesPage } from '../../../pages';
 
 test.describe('User notes page', () => {

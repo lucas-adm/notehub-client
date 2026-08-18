@@ -1,5 +1,5 @@
 import { expect, test } from '../../../fixtures/auth';
-import { SearchTagsPage } from '../../../pages/search/tags/search.page.tags';
+import { SearchTagsPage } from '../../../pages';
 
 test.describe.configure({ mode: 'serial' });
 test.describe('Search - tags filtering', () => {

@@ -1,5 +1,5 @@
 import { expect, test } from '../../../fixtures/auth';
-import { SearchNotesPage } from '../../../pages/search/notes/search.page.notes';
+import { SearchNotesPage } from '../../../pages';
 
 test.describe.configure({ mode: 'serial' });
 test.describe('Search - notes sorting and filtering', () => {

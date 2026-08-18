@@ -1,5 +1,5 @@
 import { test } from '../../fixtures/auth';
-import { UserPage } from '../../pages/user/user.page';
+import { UserPage } from '../../pages';
 
 test.describe('User profile page', () => {
 
