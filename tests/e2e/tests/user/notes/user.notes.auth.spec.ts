@@ -1,5 +1,5 @@
 import { expect, seedUsers, test } from '../../../fixtures';
-import { UserNotesPage } from '../../../pages/user/notes/user.notes.page';
+import { UserNotesPage } from '../../../pages';
 
 test.describe('User notes page', () => {
 
@@ -13,67 +13,43 @@ test.describe('User notes page', () => {
     })
 
     test('should display the default selected filters', async () => {
-        await expect(notesPage.selectedTypeOption).toHaveAttribute('aria-selected', 'true')
-        await expect(notesPage.selectedTagOption).toHaveAttribute('aria-selected', 'true')
-        await expect(notesPage.selectedOrderOption).toHaveAttribute('aria-selected', 'true')
-        await expect(notesPage.selectedSortOption).toHaveAttribute('aria-selected', 'true')
+        await expect(notesPage.typeFilter.selectedOption).toHaveAttribute('aria-selected', 'true')
+        await expect(notesPage.tagFilter.selectedOption).toHaveAttribute('aria-selected', 'true')
+        await expect(notesPage.orderFilter.selectedOption).toHaveAttribute('aria-selected', 'true')
+        await expect(notesPage.sortFilter.selectedOption).toHaveAttribute('aria-selected', 'true')
     })
 
     test('should open and close all menus', async () => {
-        const openBtns = [notesPage.typeSelectButton, notesPage.tagSelectButton, notesPage.orderSelectButton, notesPage.sortSelectButton];
-        const menus = [notesPage.typeMenu, notesPage.tagsMenu, notesPage.orderMenu, notesPage.sortMenu];
-        const closeBtns = [notesPage.typeCloseButton, notesPage.tagsCloseButton, notesPage.orderCloseButton, notesPage.sortCloseButton];
-        for (let i = 0; i < openBtns.length; i++) {
-            await notesPage.openDropdown(openBtns[i]);
-            await expect(menus[i]).toHaveAttribute('aria-hidden', 'false');
-            await notesPage.closeDropdown(closeBtns[i]);
-            await expect(menus[i]).toHaveAttribute('aria-hidden', 'true');
+        const filters = [notesPage.typeFilter, notesPage.tagFilter, notesPage.orderFilter, notesPage.sortFilter];
+        for (const filter of filters) {
+            await filter.open();
+            await expect(filter.menu).toHaveAttribute('aria-hidden', 'false');
+            await filter.close();
+            await expect(filter.menu).toHaveAttribute('aria-hidden', 'true');
         }
     })
 
     test('should filter by all type options', async () => {
-        await notesPage.testFilterOptions(
-            notesPage.typeSelectButton,
-            notesPage.typeOptions,
-            'option-type-',
-            'type',
-            (v) => v === 'all' ? null : v
-        )
+        await notesPage.typeFilter.testAllOptions((expected) => notesPage.expectParams(expected));
     })
 
     test('should filter by all tag options', async () => {
-        await notesPage.testFilterOptions(
-            notesPage.tagSelectButton,
-            notesPage.tagOptions,
-            'option-tag-',
-            'tag',
-            (v) => v === 'all' ? null : v
-        )
+        await notesPage.tagFilter.testAllOptions((expected) => notesPage.expectParams(expected));
     })
 
     test('should filter by all order options', async () => {
-        await notesPage.testFilterOptions(
-            notesPage.orderSelectButton,
-            notesPage.orderOptions,
-            'option-order-',
-            'order'
-        )
+        await notesPage.orderFilter.testAllOptions((expected) => notesPage.expectParams(expected));
     })
 
     test('should filter by all sort options', async () => {
-        await notesPage.testFilterOptions(
-            notesPage.sortSelectButton,
-            notesPage.sortOptions,
-            'option-sort-',
-            'sort'
-        )
+        await notesPage.sortFilter.testAllOptions((expected) => notesPage.expectParams(expected));
     })
 
     test('should display only closed notes when filtered by type "closed"', async () => {
         await notesPage.about.click();
         await notesPage.notes.click();
-        await notesPage.openDropdown(notesPage.typeSelectButton);
-        await notesPage.getOption(notesPage.typeOptions, 'option-type-closed').click();
+        await notesPage.typeFilter.open();
+        await notesPage.typeFilter.getOption('option-type-closed').click();
         await expect(notesPage.noteArticles.first()).toBeVisible();
         const comments = await notesPage.getArticlesCommentsLabel();
         expect(comments.length).toBeGreaterThan(0);
@@ -81,8 +57,8 @@ test.describe('User notes page', () => {
     })
 
     test('should display only closed notes when filtered by type "hidden"', async () => {
-        await notesPage.openDropdown(notesPage.typeSelectButton);
-        await notesPage.getOption(notesPage.typeOptions, 'option-type-hidden').click();
+        await notesPage.typeFilter.open();
+        await notesPage.typeFilter.getOption('option-type-hidden').click();
         await expect(notesPage.noteArticles.first()).toBeVisible();
         const totalNotes = await notesPage.noteArticles.count();
         const hiddenNotes = await notesPage.noteSVGS.count();
@@ -93,9 +69,9 @@ test.describe('User notes page', () => {
     test('should display only tags that match the search input', async () => {
         await notesPage.about.click();
         await notesPage.notes.click();
-        await notesPage.openDropdown(notesPage.tagSelectButton);
+        await notesPage.tagFilter.open();
         await notesPage.tagSearchInput.fill('other');
-        const options = await notesPage.tagOptions.allTextContents();
+        const options = await notesPage.getTagOptionsTexts();
         expect(options.length).toBeGreaterThan(0);
         for (const option of options) {
             const text = option.trim().toLowerCase();
@@ -105,7 +81,7 @@ test.describe('User notes page', () => {
     })
 
     test('should display only notes containing the selected tag', async () => {
-        await notesPage.getOption(notesPage.tagOptions, 'option-tag-other').click();
+        await notesPage.tagFilter.getOption('option-tag-other').click();
         await expect(notesPage.noteArticles.first()).toBeVisible();
         const tags = await notesPage.getArticlesTags();
         expect(tags.length).toBeGreaterThan(0);
@@ -115,10 +91,10 @@ test.describe('User notes page', () => {
     test('should sort notes alphabetically by title', async () => {
         await notesPage.about.click();
         await notesPage.notes.click();
-        await notesPage.openDropdown(notesPage.sortSelectButton);
-        await notesPage.getOption(notesPage.sortOptions, 'option-sort-asc').click();
-        await notesPage.openDropdown(notesPage.orderSelectButton);
-        await notesPage.getOption(notesPage.orderOptions, 'option-order-title').click();
+        await notesPage.sortFilter.open();
+        await notesPage.sortFilter.getOption('option-sort-asc').click();
+        await notesPage.orderFilter.open();
+        await notesPage.orderFilter.getOption('option-order-title').click();
         await expect(notesPage.noteArticles.first()).toBeVisible();
         const titles = await notesPage.getFirstTwoTitles();
         expect(titles.length).toBeGreaterThan(0);
@@ -127,16 +103,16 @@ test.describe('User notes page', () => {
     })
 
     test('should sort notes by comment count in descending order', async () => {
-        await notesPage.openDropdown(notesPage.orderSelectButton);
-        await notesPage.getOption(notesPage.orderOptions, 'option-order-commentsCount').click();
+        await notesPage.orderFilter.open();
+        await notesPage.orderFilter.getOption('option-order-commentsCount').click();
         await expect(notesPage.noteArticles.first()).toBeVisible();
         const [first, second] = await notesPage.getFirstTwoCommentsCount();
         expect(first).toBeGreaterThanOrEqual(second);
     })
 
     test('should sort notes by flame count in descending order', async () => {
-        await notesPage.openDropdown(notesPage.orderSelectButton);
-        await notesPage.getOption(notesPage.orderOptions, 'option-order-flamesCount').click();
+        await notesPage.orderFilter.open();
+        await notesPage.orderFilter.getOption('option-order-flamesCount').click();
         await expect(notesPage.noteArticles.first()).toBeVisible();
         const [first, second] = await notesPage.getFirstTwoFlamesCount();
         expect(first).toBeGreaterThanOrEqual(second);
@@ -145,8 +121,8 @@ test.describe('User notes page', () => {
     test('should display oldest notes first', async () => {
         await notesPage.about.click();
         await notesPage.notes.click();
-        await notesPage.openDropdown(notesPage.sortSelectButton);
-        await notesPage.getOption(notesPage.sortOptions, 'option-sort-asc').click();
+        await notesPage.sortFilter.open();
+        await notesPage.sortFilter.getOption('option-sort-asc').click();
         await expect(notesPage.noteArticles.first()).toBeVisible();
         const [first, second] = await notesPage.getFirstTwoTimestamps();
         expect(new Date(first).getTime()).toBeLessThanOrEqual(new Date(second).getTime());
@@ -155,8 +131,8 @@ test.describe('User notes page', () => {
     test('should display newest notes first', async () => {
         await notesPage.about.click();
         await notesPage.notes.click();
-        await notesPage.openDropdown(notesPage.sortSelectButton);
-        await notesPage.getOption(notesPage.sortOptions, 'option-sort-desc').click();
+        await notesPage.sortFilter.open();
+        await notesPage.sortFilter.getOption('option-sort-desc').click();
         await expect(notesPage.noteArticles.first()).toBeVisible();
         const [first, second] = await notesPage.getFirstTwoTimestamps();
         expect(new Date(first).getTime()).toBeGreaterThan(new Date(second).getTime());
