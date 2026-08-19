@@ -12,6 +12,8 @@ export class UserPage {
     readonly about: Locator;
     readonly notes: Locator;
     readonly flames: Locator;
+    readonly followers: Locator;
+    readonly following: Locator;
     readonly mainSection: Locator;
     readonly mainTitle: Locator;
 
@@ -24,6 +26,8 @@ export class UserPage {
         this.about = this.profile.getByRole('link', { name: 'Visão Geral' });
         this.notes = this.profile.getByRole('link', { name: 'Notas' });
         this.flames = this.profile.getByRole('link', { name: 'Chamas' });
+        this.followers = page.getByRole('link', { name: 'seguidores' });
+        this.following = page.getByRole('link', { name: 'seguindo' });
         this.mainSection = page.getByRole('main');
         this.mainTitle = this.mainSection.getByRole('heading', { level: 2 });
     }
