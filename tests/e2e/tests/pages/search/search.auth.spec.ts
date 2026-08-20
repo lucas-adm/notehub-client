@@ -1,5 +1,5 @@
-import { expect, test } from '../../fixtures/auth';
-import { SearchPage } from '../../pages/search/search.page';
+import { expect, test } from '../../../fixtures/auth';
+import { SearchPage } from '../../../pages/search/search.page';
 
 test.describe.configure({ mode: 'serial' });
 test.describe('Search - params application', () => {

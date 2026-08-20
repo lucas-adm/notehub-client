@@ -1,4 +1,4 @@
-import { LoginPage } from '../../../pages';
+import { LoginPage } from '../../../../pages';
 import { test } from '@playwright/test';
 import type { LoginFormData } from '@/core';
 
