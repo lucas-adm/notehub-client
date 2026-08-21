@@ -6,7 +6,7 @@ interface DropdownProps extends React.HTMLAttributes<HTMLDivElement> {
     buttonRef: React.RefObject<HTMLButtonElement>;
 }
 
-export const Dropdown = ({ buttonRef, ...rest }: DropdownProps) => {
+export const Dropdown = ({ buttonRef, children, ...rest }: DropdownProps) => {
 
     const pathname = usePathname();
 
@@ -109,8 +109,9 @@ export const Dropdown = ({ buttonRef, ...rest }: DropdownProps) => {
             ref={portalRef}
             style={{ top: position.top, right: position.right }}
             className="z-[998] absolute rounded-xl dark:bg-semidark bg-lighter drop-shadow-alpha-d-xs"
+            {...rest}
         >
-            {rest.children}
+            {children}
         </div>,
         document.body
     )

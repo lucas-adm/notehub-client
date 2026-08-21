@@ -17,6 +17,7 @@ export const Navbar = ({ user, ...rest }: { user: User } & React.HTMLAttributes<
     const bellButton = useRef<HTMLButtonElement>(null);
     return (
         <nav
+            aria-label='Navegação principal'
             className="sticky top-0 z-[997]
             w-screen max-w-full h-[8vh] inmd:h-[8svh] p-4
             flex items-center justify-between gap-4
@@ -25,22 +26,34 @@ export const Navbar = ({ user, ...rest }: { user: User } & React.HTMLAttributes<
         >
             <div className="pl-2 flex gap-4 w-fit">
                 <Menu />
-                <Link href={'/'} className="flex items-center justify-center">
+                <Link aria-label='Início' href={'/'} className="flex items-center justify-center">
                     <Icon.Logo width={99} height={0} className="px-2" />
                 </Link>
             </div>
             <Input type="text" placeholder="Pesquisar" />
             <div className="pr-2 flex gap-4 w-fit">
-                <Button tooltip="Criar nova nota">
+                <Button aria-label='Criar nota' tooltip="Criar nova nota">
                     <Link href={'/new'}><IconPlus size={27} /></Link>
                 </Button>
-                <Button ref={bellButton} tooltip="Ver notificações">
+                <Button aria-label='Ler notificações' ref={bellButton} tooltip="Ver notificações">
                     <Bell />
-                    <Dropdown buttonRef={bellButton}><BellDropdown /></Dropdown>
+                    <Dropdown
+                        role='list'
+                        aria-label='Notificações'
+                        buttonRef={bellButton}
+                    >
+                        <BellDropdown />
+                    </Dropdown>
                 </Button>
-                <Button ref={menuButton}>
+                <Button aria-label='Mais opções' ref={menuButton}>
                     <Component.Photo user={user} size={27} />
-                    <Dropdown buttonRef={menuButton} ><MenuDropdown user={user} /></Dropdown>
+                    <Dropdown
+                        role='menu'
+                        aria-label='Opções'
+                        buttonRef={menuButton}
+                    >
+                        <MenuDropdown user={user} />
+                    </Dropdown>
                 </Button>
             </div>
         </nav>
