@@ -25,7 +25,7 @@ export const Navbar = ({ user, ...rest }: { user: User } & React.HTMLAttributes<
             {...rest}
         >
             <div className="pl-2 flex gap-4 w-fit">
-                <Menu />
+                <Menu aria-label='Abrir menu' />
                 <Link aria-label='Início' href={'/'} className="flex items-center justify-center">
                     <Icon.Logo width={99} height={0} className="px-2" />
                 </Link>

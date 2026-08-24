@@ -45,7 +45,11 @@ export const Link = (props: LinkProps) => {
                 : 'dark:hover:bg-semilight/15 hover:bg-semidark/15',
             'transition-colors'
         )}>
-            <NextLink className="py-1 px-2 flex items-center gap-3" {...rest}>
+            <NextLink
+                aria-current={active ? 'page' : undefined}
+                className="py-1 px-2 flex items-center gap-3"
+                {...rest}
+            >
                 {!reverse
                     ?
                     <>

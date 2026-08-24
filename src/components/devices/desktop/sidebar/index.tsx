@@ -10,7 +10,7 @@ const Minimized = ({ user }: { user: User }) => {
     return (
         <aside
             data-testid='sidebar'
-            data-state='maximized'
+            data-state='minimized'
             className="fixed
             w-[88px] h-[92vh] inmd:h-[92svh] p-2
             flex flex-col gap-2
@@ -28,7 +28,7 @@ const Maximized = ({ user, ...rest }: { user: User } & React.HTMLAttributes<HTML
     return (
         <aside
             data-testid='sidebar'
-            data-state='minimized'
+            data-state='maximized'
             className="fixed overflow-y-auto overscroll-contain scrollbar-desktop
             w-[240px] h-[92vh] inmd:h-[92svh] p-4
             flex flex-col gap-3
