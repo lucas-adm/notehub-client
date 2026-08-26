@@ -4,6 +4,7 @@ import { UserPage } from './user.page';
 export class SearchableListPage extends UserPage {
 
     readonly searchInput: Locator;
+    readonly noteArticles: Locator;
     readonly noteTimestamps: Locator;
     readonly noteTitles: Locator;
     readonly emptyResultsDialog: Locator;
@@ -12,18 +13,11 @@ export class SearchableListPage extends UserPage {
     constructor(page: Page) {
         super(page);
         this.searchInput = page.getByPlaceholder('Encontrar uma nota...');
+        this.noteArticles = page.locator('article');
         this.noteTimestamps = page.locator('article time');
         this.noteTitles = page.locator('article h2');
         this.emptyResultsDialog = page.getByRole('dialog', { name: 'Zero' });
         this.privateProfileDialog = page.getByRole('dialog', { name: 'Perfil privado' });
-    }
-
-    async waitForNotesResponse(action: () => Promise<void>) {
-        const [response] = await Promise.all([
-            this.page.waitForResponse((res) => res.url().includes('?') && res.ok()),
-            action(),
-        ])
-        return response;
     }
 
     async expectParams(expected: Record<string, string | null>) {

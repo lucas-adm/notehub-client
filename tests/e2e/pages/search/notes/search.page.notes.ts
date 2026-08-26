@@ -16,16 +16,6 @@ export class SearchNotesPage extends SearchPage {
         this.noteFlames = page.getByTestId('flame-count');
     }
 
-    async waitForNotesResponse(action: () => Promise<void>) {
-        const [response] = await Promise.all([
-            this.page.waitForResponse((res) =>
-                res.url().includes('/notes/search?') &&
-                res.ok()),
-            action(),
-        ])
-        return response;
-    }
-
     async getArticlesTitles(): Promise<string[]> {
         return this.noteTitles.evaluateAll(
             (elements) => elements.map((el) => el.textContent?.trim() ?? '')

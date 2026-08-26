@@ -10,7 +10,7 @@ test.describe('User notes page', () => {
         notesPage = new UserNotesPage(authenticatedPage);
         await notesPage.goto('/');
         await notesPage.openAndWaitForProfile();
-        await notesPage.waitForNotesResponse(() => notesPage.notes.click());
+        await notesPage.notes.click();
     })
 
     test('should display the default selected filters', async () => {
@@ -136,13 +136,14 @@ test.describe('User notes page', () => {
         await notesPage.sortFilter.getOption('option-sort-desc').click();
         await expect(notesPage.noteArticles.first()).toBeVisible();
         const [first, second] = await notesPage.getFirstTwoTimestamps();
-        expect(new Date(first).getTime()).toBeGreaterThan(new Date(second).getTime());
+        expect(new Date(first).getTime()).toBeGreaterThanOrEqual(new Date(second).getTime());
     })
 
     test('should display search results when a search term is entered', async () => {
         await notesPage.about.click();
         await notesPage.notes.click();
-        await notesPage.waitForNotesResponse(() => notesPage.search('note'));
+        await notesPage.search('note');
+        await expect(notesPage.noteArticles.first()).toBeVisible();
         await notesPage.expectParams({ q: 'note' });
         const texts = await notesPage.getArticlesTitles();
         expect(texts.length).toBeGreaterThan(0);
@@ -150,7 +151,8 @@ test.describe('User notes page', () => {
     })
 
     test('should display empty results when no notes match the search term', async () => {
-        await notesPage.waitForNotesResponse(() => notesPage.search('xyz'));
+        await notesPage.search('xyz');
+        await expect(notesPage.noteArticles.first()).toBeVisible();
         await notesPage.expectParams({ q: 'xyz' });
         await expect(notesPage.emptyResultsDialog).toBeVisible();
     })

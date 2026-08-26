@@ -57,7 +57,7 @@ export class UserNotesPage extends SearchableListPage {
             paramName: 'sort',
         })
         this.tagSearchInput = page.getByPlaceholder('Filtrar...');
-        this.noteArticles = this.noteTimestamps;
+        this.noteArticles = page.locator('article');
         this.noteCommentsCount = page.getByTestId('comment-count');
         this.noteFlamesCount = page.getByTestId('flame-count');
         this.noteSVGS = page.locator('article header svg');

@@ -3,25 +3,17 @@ import { SearchPage } from '../search.page';
 
 export class SearchUsersPage extends SearchPage {
 
+    readonly userArticles: Locator;
     readonly userNames: Locator;
     readonly userTimestamps: Locator;
     readonly userFollowers: Locator;
 
     constructor(page: Page) {
         super(page);
+        this.userArticles = page.locator('article');
         this.userNames = page.locator('article header h4');
         this.userTimestamps = page.locator('article time');
         this.userFollowers = page.getByTestId('followers-count');
-    }
-
-    async waitForNotesResponse(action: () => Promise<void>) {
-        const [response] = await Promise.all([
-            this.page.waitForResponse((res) =>
-                res.url().includes('/users') &&
-                res.ok()),
-            action(),
-        ])
-        return response;
     }
 
     async getTimestamps(limit?: number): Promise<string[]> {
