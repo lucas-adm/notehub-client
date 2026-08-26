@@ -16,6 +16,8 @@ export default defineConfig({
         screenshot: 'only-on-failure',
     },
 
+    globalSetup: require.resolve('./tests/e2e/fixtures/global-setup.ts'),
+
     projects: [
         {
             name: 'authenticated',
