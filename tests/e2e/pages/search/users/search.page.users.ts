@@ -24,6 +24,7 @@ export class SearchUsersPage extends SearchPage {
     }
 
     async getFirstTwoTimestamps(): Promise<[string, string]> {
+        await this.waitForStableCount(this.userTimestamps, 2);
         const [first, second] = await this.getTimestamps(2);
         if (first && second) return [first, second];
         throw new Error('Must have at least 2 users in the result to validate sorting.');
@@ -36,12 +37,14 @@ export class SearchUsersPage extends SearchPage {
     }
 
     async getFirstTwoFollowersCount(): Promise<[number, number]> {
+        await this.waitForStableCount(this.userFollowers, 2);
         const followers = await this.getFollowersCount();
         if (followers.length >= 2) return [followers[0], followers[1]];
         throw new Error('Must have at least 2 users in the result to validate sorting.');
     }
 
     async getArticlesUsernames(): Promise<string[]> {
+        await this.waitForStableCount(this.userNames, 1);
         return this.userNames.evaluateAll(
             (elements) => elements.map((el) => el.textContent?.trim() ?? '')
         )

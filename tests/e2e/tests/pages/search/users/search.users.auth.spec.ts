@@ -14,28 +14,24 @@ test.describe('Search - users sorting and filtering', () => {
     test('sort by "Recent" should display the newest user first', async () => {
         await searchPage.filterByType('users');
         await searchPage.sortByRecent();
-        await expect(searchPage.userArticles.first()).toBeVisible();
         const [first, second] = await searchPage.getFirstTwoTimestamps();
         expect(new Date(first).getTime()).toBeGreaterThanOrEqual(new Date(second).getTime());
     })
 
     test('sort by "Old" should display the oldest user first', async () => {
         await searchPage.sortByOld();
-        await expect(searchPage.userArticles.first()).toBeVisible();
         const [first, second] = await searchPage.getFirstTwoTimestamps();
         expect(new Date(first).getTime()).toBeLessThanOrEqual(new Date(second).getTime());
     })
 
     test('sort by "Relevance" should display the more followed user first', async () => {
         await searchPage.sortByRelevance();
-        await expect(searchPage.userArticles.first()).toBeVisible();
         const [first, second] = await searchPage.getFirstTwoFollowersCount();
         expect(first).toBeGreaterThanOrEqual(second);
     })
 
     test('search for "user" should display only users that contain the term', async () => {
         await searchPage.search('user');
-        await expect(searchPage.userArticles.first()).toBeVisible();
         const texts = await searchPage.getArticlesUsernames();
         expect(texts.length).toBeGreaterThan(0);
         for (const text of texts) expect(text.toLowerCase()).toContain('user');

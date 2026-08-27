@@ -14,7 +14,7 @@ export class UserPage {
     readonly flames: Locator;
     readonly followers: Locator;
     readonly following: Locator;
-    readonly mainSection: Locator;
+    readonly main: Locator;
     readonly mainTitle: Locator;
 
     constructor(page: Page) {
@@ -26,10 +26,10 @@ export class UserPage {
         this.about = this.profile.getByRole('link', { name: 'Visão Geral' });
         this.notes = this.profile.getByRole('link', { name: 'Notas' });
         this.flames = this.profile.getByRole('link', { name: 'Chamas' });
-        this.followers = page.getByRole('link', { name: 'seguidores' });
-        this.following = page.getByRole('link', { name: 'seguindo' });
-        this.mainSection = page.getByRole('main');
-        this.mainTitle = this.mainSection.getByRole('heading', { level: 2 });
+        this.main = page.getByRole('main');
+        this.followers = this.main.getByRole('link', { name: 'seguidores' });
+        this.following = this.main.getByRole('link', { name: 'seguindo' });
+        this.mainTitle = this.main.getByRole('heading', { level: 2 });
     }
 
     async goto(url: string) {
@@ -60,7 +60,7 @@ export class UserPage {
     async expectProfileLoaded() {
         await expect(this.banner).toBeVisible();
         await expect(this.avatar).toBeVisible();
-        await expect(this.mainSection).toBeVisible();
+        await expect(this.main).toBeVisible();
         await expect(this.mainTitle).toBeVisible();
     }
 

@@ -14,7 +14,6 @@ test.describe('Search - tags filtering', () => {
     test('search for "tag" should display only notes that contain the tag', async () => {
         await searchPage.filterByType('tags');
         await searchPage.search('tag');
-        await expect(searchPage.noteArticles.first()).toBeVisible();
         const texts = await searchPage.getArticlesTags();
         expect(texts.length).toBeGreaterThan(0);
         for (const text of texts) expect(text.toLowerCase()).toContain('tag');

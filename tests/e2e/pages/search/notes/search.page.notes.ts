@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 import { SearchPage } from '../search.page';
 
 export class SearchNotesPage extends SearchPage {
@@ -17,6 +17,7 @@ export class SearchNotesPage extends SearchPage {
     }
 
     async getArticlesTitles(): Promise<string[]> {
+        await this.waitForStableCount(this.noteArticles, 1);
         return this.noteTitles.evaluateAll(
             (elements) => elements.map((el) => el.textContent?.trim() ?? '')
         )
@@ -30,6 +31,7 @@ export class SearchNotesPage extends SearchPage {
     }
 
     async getFirstTwoTimestamps(): Promise<[string, string]> {
+        await this.waitForStableCount(this.noteTimestamps, 2);
         const [first, second] = await this.getTimestamps(2);
         if (first && second) return [first, second];
         throw new Error('Must have at least 2 notes in the result to validate sorting.');
@@ -42,6 +44,7 @@ export class SearchNotesPage extends SearchPage {
     }
 
     async getFirstTwoFlamesCount(): Promise<[number, number]> {
+        await this.waitForStableCount(this.noteFlames, 2);
         const flames = await this.getFlamesCount();
         if (flames.length >= 2) return [flames[0], flames[1]];
         throw new Error('Must have at least 2 notes in the result to validate sorting.');

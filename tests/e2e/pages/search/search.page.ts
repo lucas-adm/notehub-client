@@ -77,4 +77,14 @@ export class SearchPage {
         }
     }
 
+    async waitForStableCount(locator: Locator, minCount: number) {
+        let lastCount = -1;
+        await expect.poll(async () => {
+            const count = await locator.count();
+            const stable = count === lastCount && count >= minCount;
+            lastCount = count;
+            return stable;
+        }).toBe(true);
+    }
+
 }

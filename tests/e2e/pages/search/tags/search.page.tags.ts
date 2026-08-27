@@ -17,6 +17,7 @@ export class SearchTagsPage extends SearchPage {
     }
 
     async getArticlesTags(): Promise<string[]> {
+        await this.waitForStableCount(this.tags, 1);
         return this.tags.evaluateAll(
             (elements) => elements.map((el) => el.textContent?.trim() ?? '')
         )
