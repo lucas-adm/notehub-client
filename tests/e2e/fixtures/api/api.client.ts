@@ -17,6 +17,15 @@ export class ApiClient {
     return res.json();
   }
 
+  async canLogin(identifier: string, password: string): Promise<boolean> {
+    const res = await this.ctx.post('auth/login', {
+      headers: { 'X-Device-Id': this.device },
+      data: { identifier, password },
+    })
+    if (res.ok()) return true;
+    return false;
+  }
+
   async login(identifier: string, password: string): Promise<string> {
     const res = await this.ctx.post('auth/login', {
       headers: { 'X-Device-Id': this.device },

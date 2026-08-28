@@ -1,10 +1,16 @@
 import { ApiClient } from './api';
-import { FullConfig } from '@playwright/test';
 import { seedNotes, seedUsers } from './seeds';
 
-export default async function globalSetup(config: FullConfig) {
+export default async function globalSetup() {
 
     const api = await ApiClient.create();
+
+    const alreadySeeded = await api.canLogin(seedUsers.usera.username, seedUsers.usera.password);
+    if (alreadySeeded) {
+        console.log('↷ e2e database already seeded, skipping.');
+        await api.dispose();
+        return;
+    }
 
     for (const user of Object.values(seedUsers)) {
         await api.createUser(user);
@@ -40,5 +46,6 @@ export default async function globalSetup(config: FullConfig) {
     await api.createFlame(tokens.usera, noteIds.noteb);
 
     await api.dispose();
+    console.log('✔ e2e database seeded successfully.');
 
 }
