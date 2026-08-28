@@ -8,7 +8,7 @@ export class ApiClient {
   private constructor(private readonly ctx: APIRequestContext) { }
 
   static async create(): Promise<ApiClient> {
-    const ctx = await request.newContext({ baseURL: 'http://localhost:8080/api/v1/' });
+    const ctx = await request.newContext({ baseURL: `${process.env.NEXT_PUBLIC_API_URL}/` });
     return new ApiClient(ctx);
   }
 
