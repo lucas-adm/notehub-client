@@ -17,6 +17,13 @@ export class ApiClient {
     return res.json();
   }
 
+  async deleteUser(accessToken: string, data: { password: string }) {
+    await this.ctx.delete('users/delete', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      data,
+    })
+  }
+
   async canLogin(identifier: string, password: string): Promise<boolean> {
     const res = await this.ctx.post('auth/login', {
       headers: { 'X-Device-Id': this.device },
@@ -27,7 +34,7 @@ export class ApiClient {
   }
 
   async login(identifier: string, password: string): Promise<string> {
-    const res = await this.ctx.post('auth/login', {
+    const res = await this.ctx.post('test/auth/login', {
       headers: { 'X-Device-Id': this.device },
       data: { identifier, password },
     })

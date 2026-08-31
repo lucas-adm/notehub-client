@@ -7,6 +7,7 @@ export default async function globalSetup() {
 
     const alreadySeeded = await api.canLogin(seedUsers.usera.username, seedUsers.usera.password);
     if (alreadySeeded) {
+        await api.deleteUser(await api.login('userx', 'userx'), { password: 'userx' });
         console.log('↷ e2e database already seeded, skipping.');
         await api.dispose();
         return;
