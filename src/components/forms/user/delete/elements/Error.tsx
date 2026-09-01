@@ -12,9 +12,15 @@ export const Error = ({ name, ...rest }: ErrorProps) => {
     const error = errors[name]?.message;
 
     if (error) return (
-        <p className="font-medium text-sm text-red-600" {...rest}>
+        <p
+            data-testid={`error-${name}`}
+            className="font-medium text-sm text-red-600"
+            {...rest}
+        >
             {error.toString()}
         </p>
     )
+
+    return null;
 
 }

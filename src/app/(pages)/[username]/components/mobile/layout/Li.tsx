@@ -19,6 +19,7 @@ export const Li = ({ children, ...rest }: { children: React.ReactNode } & LinkPr
             )}
         >
             <Link
+                aria-current={onRoute ? 'page' : undefined}
                 {...rest}
             >
                 {children}

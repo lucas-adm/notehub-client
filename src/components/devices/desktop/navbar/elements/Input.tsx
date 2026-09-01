@@ -101,7 +101,11 @@ export const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => {
                 <IconSearch size={20} className="text-white" />
             </button>
             {searches(user).length > 0 &&
-                <InputDropdown isOpen={isDropdownOpen}>
+                <InputDropdown
+                    data-testid="searches"
+                    aria-hidden={!isDropdownOpen}
+                    isOpen={isDropdownOpen}
+                >
                     <ul>
                         {searches(user).map((query, index) => (
                             <li key={index}>

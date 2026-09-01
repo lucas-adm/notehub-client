@@ -13,7 +13,11 @@ export const Error = ({ field, ...rest }: ErrorProps) => {
 
     if (fieldError && typeof fieldError.message === "string") {
         return (
-            <p className="pl-1 text-sm font-medium dark:text-red-500 text-red-600" {...rest}>
+            <p
+                data-testid={`error-${field}`}
+                className="pl-1 text-sm font-medium dark:text-red-500 text-red-600"
+                {...rest}
+            >
                 {fieldError.message}
             </p>
         )
@@ -23,12 +27,18 @@ export const Error = ({ field, ...rest }: ErrorProps) => {
         for (const key in fieldError) {
             if (Object.prototype.hasOwnProperty.call(fieldError, key) && (fieldError as any)[key]?.message) {
                 return (
-                    <p className="pl-1 text-sm font-medium dark:text-red-500 text-red-600" {...rest}>
+                    <p
+                        data-testid={`error-${field}`}
+                        className="pl-1 text-sm font-medium dark:text-red-500 text-red-600"
+                        {...rest}
+                    >
                         {(fieldError as any)[key].message}
                     </p>
                 )
             }
         }
     }
+
+    return null;
 
 }

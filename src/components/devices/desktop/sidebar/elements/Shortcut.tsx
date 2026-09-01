@@ -13,14 +13,17 @@ export const Shortcut = (props: ShortcutProps) => {
 
     const pathname = usePathname();
 
+    const active: boolean = pathname === rest.href
+
     return (
         <Link
+            aria-current={active ? 'page' : undefined}
             className={clsx(
                 'cursor-pointer',
                 'py-3 px-1',
                 'flex flex-col items-center gap-1',
                 'rounded-xl',
-                pathname === rest.href
+                active
                     ? 'text-lighter bg-primary'
                     : 'hover:dark:bg-semilight/10 hover:bg-semidark/10',
                 'transition-colors'

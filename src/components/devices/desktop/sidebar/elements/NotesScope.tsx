@@ -42,14 +42,17 @@ export const NotesScope = () => {
     return (
         <div className="flex flex-col gap-3">
             <Input type="text" required onChange={findBy} />
-            {list.map(note =>
-                <Link
-                    key={note.id}
-                    href={`/${note.user!.username}/${note.id}`}
-                    icon={<Component.Photo user={note.user} />}
-                    text={note.title}
-                />
-            )}
+            <ul aria-label='Notas' className="flex flex-col gap-3">
+                {list.map(note =>
+                    <li key={note.id}>
+                        <Link
+                            href={`/${note.user!.username}/${note.id}`}
+                            icon={<Component.Photo user={note.user} />}
+                            text={note.title}
+                        />
+                    </li>
+                )}
+            </ul>
             {!isSearching && notes.length > sliced.length &&
                 <Button
                     className="w-fit flex items-center gap-3 py-1 cursor-pointer hover:text-secondary transition-colors"

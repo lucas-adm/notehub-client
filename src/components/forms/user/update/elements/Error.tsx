@@ -13,11 +13,14 @@ export const Error = ({ field, ...rest }: ErrorProps) => {
 
     if (error) return (
         <span
+            data-testid={`error-${field}`}
             className="absolute top-[105%] left-2 font-medium text-sm text-red-500"
             {...rest}
         >
             {error.toString()}
         </span>
     )
+
+    return null;
 
 }

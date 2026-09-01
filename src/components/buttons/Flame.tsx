@@ -74,7 +74,12 @@ export const Flame = ({ size = 24, note, useCount, ...rest }: FlameProps) => {
     )
 
     const Count = (props: React.HTMLAttributes<HTMLSpanElement>) => (
-        <span className="pointer-events-none select-none text-sm" {...props}>{count}</span>
+        <span
+            data-testid="flame-count"
+            className="pointer-events-none select-none text-sm"
+            {...props}>
+            {count}
+        </span>
     )
 
     if (!user) return null;

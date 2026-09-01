@@ -13,7 +13,11 @@ export const ChangeThemeDropdown = ({ setterToClose }: ChangeThemeProps) => {
     const { pref: { useDarkTheme }, setTheme } = usePref();
 
     return (
-        <div className="w-[300px]">
+        <div
+            role='menu'
+            aria-label='Aparências'
+            className="w-[300px]"
+        >
             <OptionHeader title="Aparência" onClick={setterToClose} />
             <Section>
                 <Field.Button text='Tema escuro' onClick={() => setTheme('dark')}>

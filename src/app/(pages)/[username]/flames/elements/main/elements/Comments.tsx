@@ -21,7 +21,7 @@ export const Comments = ({ note }: { note: LowDetailNote }) => {
                 'transition-all'
             )}
         >
-            <span>
+            <span data-testid="comment-count">
                 {isClosed
                     ? <IconMessageCircleOff size={20} className="insm:!text-white" />
                     : <IconMessageCircle size={20} className="insm:!text-white" />

@@ -3,7 +3,7 @@ import { useFormContext } from "react-hook-form";
 
 interface ErrorProps extends React.HTMLAttributes<HTMLParagraphElement> {
     field: keyof RecoverFormData;
-};
+}
 
 const Error = ({ field, ...rest }: ErrorProps) => {
 
@@ -11,13 +11,19 @@ const Error = ({ field, ...rest }: ErrorProps) => {
 
     const error = errors[field]?.message;
 
-    if (!error) return null;
 
-    return (
-        <p className="px-1 text-sm font-bold dark:text-red-500 text-rose-500" {...rest} >
+    if (error) return (
+        <p
+            data-testid={`error-${field}`}
+            className="px-1 text-sm font-bold dark:text-red-500 text-rose-500"
+            {...rest}
+        >
             {error.toString()}
         </p>
     )
-};
+
+    return null;
+
+}
 
 export default Error;

@@ -29,6 +29,7 @@ export const MenuDropdown = ({ user }: { user: User }) => {
             </Section>
             <Section>
                 <Field.Button
+                    aria-label='Temas'
                     text={`Aparência: ${useDarkTheme ? 'escura' : ' clara'}`} useChevron
                     onClick={() => setIsChangingTheme(true)}
                 >

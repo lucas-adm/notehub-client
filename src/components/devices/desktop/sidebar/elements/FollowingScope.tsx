@@ -25,16 +25,19 @@ export const FollowingScope = () => {
 
     return (
         <div className="flex flex-col gap-3">
-            {listState.map(user => (
-                <Link
-                    user={user}
-                    key={user.username}
-                    href={`/${user.username}`}
-                    icon={<Component.Photo user={user} />}
-                    useBadge={user.dev ? 'dev' : user.sponsor ? 'sponsor' : 'none'}
-                    text={user.username}
-                />
-            ))}
+            <ul aria-label='Seguindo' className="flex flex-col gap-3">
+                {listState.map(user => (
+                    <li key={user.username}>
+                        <Link
+                            user={user}
+                            href={`/${user.username}`}
+                            icon={<Component.Photo user={user} />}
+                            useBadge={user.dev ? 'dev' : user.sponsor ? 'sponsor' : 'none'}
+                            text={user.username}
+                        />
+                    </li>
+                ))}
+            </ul>
             {following.length > sliced.length && (
                 <div className={clsx(
                     'cursor-pointer',
