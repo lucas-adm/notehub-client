@@ -34,7 +34,7 @@ export default async function globalSetup() {
     const noteIds: Record<keyof typeof seedNotes, string> = {} as never;
     for (const [key, note] of Object.entries(seedNotes)) {
         const created = await api.createNote(tokens[note.author], {
-            title: note.title,
+            name: note.name,
             tags: note.tags,
             closed: note.closed,
             hidden: note.hidden,
