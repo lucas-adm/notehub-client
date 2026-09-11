@@ -22,18 +22,18 @@ export const Target = ({ event, ...rest }: TargetProps) => {
 
     const target = (() => {
         switch (event.event) {
-            case Event.Note_Created: return `/${event.note.user ? event.note.user.username : 'null'}/${event.note.id}`;
-            case Event.Note_Flamed: return `/${event.flame.note.user ? event.flame.note.user.username : 'null'}/${event.flame.note.id}`;
-            case Event.Note_Commented: return `/${event.comment.note.user ? event.comment.note.user.username : 'null'}/${event.comment.note.id}`;
+            case Event.Note_Created: return event.note.user ? `/${event.note.user.username}/${event.note.name}` : `/${event.note.full_name}`;
+            case Event.Note_Flamed: return event.flame.note.user ? `/${event.flame.note.user.username}/${event.flame.note.name}` : `/${event.flame.note.full_name}`;
+            case Event.Note_Commented: return event.comment.note.user ? `/${event.comment.note.user.username}/${event.comment.note.name}` : `/${event.comment.note.full_name}`;
             default: return '';
         }
     })()
 
     const text = (() => {
         switch (event.event) {
-            case Event.Note_Created: return `${event.note.user ? event.note.user.username : 'null'} / ${event.note.title}`;
-            case Event.Note_Flamed: return `${event.flame.note.user ? event.flame.note.user.username : 'null'} / ${event.flame.note.title}`;
-            case Event.Note_Commented: return `${event.comment.note.user ? event.comment.note.user.username : 'null'} / ${event.comment.note.title}`;
+            case Event.Note_Created: return event.note.user ? `${event.note.user.username} / ${event.note.name}` : `null / ${event.note.name}`;
+            case Event.Note_Flamed: return event.flame.note.user ? `${event.flame.note.user.username} / ${event.flame.note.name}` : `null / ${event.flame.note.name}`;
+            case Event.Note_Commented: return event.comment.note.user ? `${event.comment.note.user.username} / ${event.comment.note.name}` : `null / ${event.comment.note.name}`;
             default: return '';
         }
     })()

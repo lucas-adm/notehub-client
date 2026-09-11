@@ -40,7 +40,7 @@ export const Form = ({ token, username }: { token: string; username: string; }) 
                 qc.invalidateQueries({ queryKey: ['searchTags'] })
             ])
             setNewNote(note);
-            router.push(`/${username}/${note.id}`);
+            router.push(`/${username}/${note.name}`);
         } catch (error) {
             const { data } = error as ApiError;
             if (Array.isArray(data)) handleFieldErrors(data, setError);
@@ -64,9 +64,9 @@ export const Form = ({ token, username }: { token: string; username: string; }) 
                 </Section>
                 <Section className="gap-3">
                     <Fieldset className="relative">
-                        <Label htmlFor="title" tip="*" className="block">Título</Label>
-                        <InputText autoFocus required name="title" countPosition="half" className="w-1/2 insm:w-full" />
-                        <Error field="title" />
+                        <Label htmlFor="name" tip="*" className="block">Título</Label>
+                        <InputText autoFocus required name="name" countPosition="half" className="w-1/2 insm:w-full" />
+                        <Error field="name" />
                     </Fieldset>
                     <Fieldset className="relative">
                         <Label htmlFor="description" tip="(opcional)" className="block">Descrição</Label>
