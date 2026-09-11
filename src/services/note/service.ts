@@ -35,8 +35,8 @@ export const createNoteService = (publicApi: ApiClient, privateApi: ApiClient, w
         return withRetry(token, (token) => privateApi.post(endpoint, data, { token: token }));
     }
 
-    const getNote = async (token: string | null, id: UUID): Promise<Note> => {
-        const endpoint = `/notes/${id}`;
+    const getNote = async (token: string | null, username: string, name: string): Promise<Note> => {
+        const endpoint = `/notes/${username}/${name}`;
         return withRetry(token, (token) => privateApi.get(endpoint, { token: token }));
     }
 
