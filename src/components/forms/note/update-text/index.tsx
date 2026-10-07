@@ -1,24 +1,28 @@
 import { clsx } from 'clsx';
 import { Element } from "./elements";
 import { FormProvider, useForm } from "react-hook-form";
-import { IconCheck, IconDotsVertical, IconEdit, IconHistory, IconTrash, IconX } from "@tabler/icons-react";
+import { IconCheck, IconDotsVertical, IconEdit, IconHistory, IconPictureInPicture, IconTrash, IconX } from "@tabler/icons-react";
 import { Menu, MenuItem } from "@/components/menu";
 import { Note, NoteTextUpdateFormData, noteTextUpdateFormSchema, Token } from "@/core"
 import { useApi, useDrafts, useNotes, useTags } from "@/data/hooks";
 import { useQueryClient } from '@tanstack/react-query';
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useShortcuts } from './shortcuts';
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
     token: Token | null;
     note: Note;
+    setNote: React.Dispatch<React.SetStateAction<Note | null>>;
     author: string | null;
     currentUser: string | null;
+    pipWindowSupported: boolean;
+    pipWindow: Window | null;
+    openPiP: (width?: number, height?: number) => Promise<void>
 }
 
-export const Form = ({ token, note, author, currentUser, ...rest }: FormProps) => {
+export const Form = ({ token, note, setNote, author, currentUser, pipWindowSupported, pipWindow, openPiP, ...rest }: FormProps) => {
 
     const {
         noteService: { updateNoteText, deleteNote },
@@ -43,6 +47,7 @@ export const Form = ({ token, note, author, currentUser, ...rest }: FormProps) =
 
     const isAuthor = author ? author === currentUser : false;
 
+    const rootRef = useRef<HTMLFormElement>(null);
     const [initialText, setInitialText] = useState<string>(note.markdown ?? "");
     const [text, setText] = useState<string>(initialText);
     const [skipDraft, setSkipDraft] = useState<boolean>(draft ? false : true);
@@ -62,6 +67,7 @@ export const Form = ({ token, note, author, currentUser, ...rest }: FormProps) =
                 .then(() => {
                     setIsSubmiting(false);
                     setIsEditing(false);
+                    setNote(prev => prev ? { ...prev, markdown: data.markdown } : null);
                     setText(data.markdown);
                     setInitialText(data.markdown);
                     setIsPreviewing(false);
@@ -100,6 +106,12 @@ export const Form = ({ token, note, author, currentUser, ...rest }: FormProps) =
     const closeMenu = () => setIsMenuOpen(false);
 
     const togglePreview = () => setIsPreviewing(prev => !prev);
+
+    const openPictureInPicture = (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        openPiP();
+        return;
+    }
 
     const startEdit = (e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
@@ -159,8 +171,10 @@ export const Form = ({ token, note, author, currentUser, ...rest }: FormProps) =
     }
 
     useShortcuts({
+        rootRef,
         isAuthor,
         isEditing,
+        onPictureInPicture: openPictureInPicture,
         onStartEdit: startEdit,
         onCancel: cancelEdit,
         onDelete: handleDeleteNote,
@@ -172,11 +186,15 @@ export const Form = ({ token, note, author, currentUser, ...rest }: FormProps) =
     return (
         <FormProvider {...updateNoteForm}>
             <form
+                ref={rootRef}
                 id="note"
                 onSubmit={handleSubmit(onSubmit)}
                 className={clsx(
                     'scroll-mt-[9vh] inmd:scroll-mt-0',
-                    'relative min-h-[90vh] max-h-[90vh] inmd:min-h-[93.25svh] inmd:max-h-[93.25svh]',
+                    'relative',
+                    pipWindow
+                        ? 'min-h-screen'
+                        : 'min-h-[90vh] max-h-[90vh] inmd:min-h-[93.25svh] inmd:max-h-[93.25svh]',
                     'rounded-[5px] border inmd:dark:border-none dark:border-middark/50 border-midlight/50',
                     'flex flex-col flex-1',
                     'dark:bg-darker bg-lighter',
@@ -201,63 +219,77 @@ export const Form = ({ token, note, author, currentUser, ...rest }: FormProps) =
                             Visualizar
                         </EditingTitle>
                     </div>
-                    {isAuthor &&
-                        <div className="flex gap-3">
-                            {skipDraft ? null :
-                                <ActionButton
-                                    type="button"
-                                    onClick={startDraft}
-                                    isEditing={isEditing}
-                                    icon={IconHistory}
-                                    tooltip="Rascunho"
-                                    className="dark:bg-semilight/20 bg-semidark/20 dark:hover:bg-semilight/10 hover:bg-semidark/10"
-                                />
-                            }
+                    <div className="flex gap-3">
+                        {skipDraft ? null :
                             <ActionButton
+                                isAuthor={isAuthor}
                                 type="button"
-                                onClick={cancelEdit}
+                                onClick={startDraft}
                                 isEditing={isEditing}
-                                icon={IconX}
-                                tooltip="Cancelar"
+                                icon={IconHistory}
+                                tooltip="Rascunho"
                                 className="dark:bg-semilight/20 bg-semidark/20 dark:hover:bg-semilight/10 hover:bg-semidark/10"
                             />
-                            <ActionButton
+                        }
+                        <ActionButton
+                            isAuthor={isAuthor}
+                            type="button"
+                            onClick={cancelEdit}
+                            isEditing={isEditing}
+                            icon={IconX}
+                            tooltip="Cancelar"
+                            className="dark:bg-semilight/20 bg-semidark/20 dark:hover:bg-semilight/10 hover:bg-semidark/10"
+                        />
+                        {pipWindowSupported && !pipWindow
+                            ? <ActionButton
+                                skipAuthorityCheck
                                 type="button"
-                                onClick={startSubmit}
-                                isEditing={isEditing}
-                                icon={IconCheck}
-                                tooltip="Salvar"
-                                className="text-white bg-primary hover:bg-secondary"
-                            />
-                            <ActionButton
-                                type="button"
-                                disabled={isPending}
-                                onClick={toggleMenu}
-                                onBlur={closeMenu}
+                                onClick={openPictureInPicture}
                                 isEditing={!isEditing}
-                                icon={IconDotsVertical}
-                                tooltip="Menu"
-                                className="relative dark:hover:bg-semilight/10 hover:bg-semidark/10 dark:focus:bg-semilight/10 focus:bg-semidark/10"
-                            >
-                                <Menu isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen}>
-                                    <MenuItem
-                                        onClick={startEdit}
-                                        icon={IconEdit}
-                                        className="dark:hover:text-secondary hover:text-primary"
-                                    >
-                                        Editar
-                                    </MenuItem>
-                                    <MenuItem
-                                        onClick={startDelete}
-                                        icon={IconTrash}
-                                        className="hover:text-red-500"
-                                    >
-                                        Apagar
-                                    </MenuItem>
-                                </Menu>
-                            </ActionButton>
-                        </div>
-                    }
+                                icon={IconPictureInPicture}
+                                tooltip="Picture-in-Picture"
+                                className="dark:hover:bg-semilight/10 hover:bg-semidark/10 dark:focus:bg-semilight/10 focus:bg-semidark/10"
+                            />
+                            : null
+                        }
+                        <ActionButton
+                            isAuthor={isAuthor}
+                            type="button"
+                            onClick={startSubmit}
+                            isEditing={isEditing}
+                            icon={IconCheck}
+                            tooltip="Salvar"
+                            className="text-white bg-primary hover:bg-secondary"
+                        />
+                        <ActionButton
+                            isAuthor={isAuthor}
+                            type="button"
+                            disabled={isPending}
+                            onClick={toggleMenu}
+                            onBlur={closeMenu}
+                            isEditing={!isEditing}
+                            icon={IconDotsVertical}
+                            tooltip="Menu"
+                            className="relative dark:hover:bg-semilight/10 hover:bg-semidark/10 dark:focus:bg-semilight/10 focus:bg-semidark/10"
+                        >
+                            <Menu isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen}>
+                                <MenuItem
+                                    onClick={startEdit}
+                                    icon={IconEdit}
+                                    className="dark:hover:text-secondary hover:text-primary"
+                                >
+                                    Editar
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={startDelete}
+                                    icon={IconTrash}
+                                    className="hover:text-red-500"
+                                >
+                                    Apagar
+                                </MenuItem>
+                            </Menu>
+                        </ActionButton>
+                    </div>
                 </header>
                 <Dialog
                     msg="Tem certeza de que deseja apagar esta nota?"
