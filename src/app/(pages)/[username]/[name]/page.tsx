@@ -8,7 +8,7 @@ import { IconEyeOff, IconLock, IconNotesOff, IconPictureInPicture } from "@table
 import { Section } from "../components/Section";
 import { Skeleton } from "./skeleton";
 import { Template } from "@/components/templates";
-import { useApi, usePiP, useUser } from "@/data/hooks";
+import { useApi, useFullscreen, usePiP, useUser } from "@/data/hooks";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 
@@ -31,6 +31,7 @@ const Page = () => {
         if (response && response.type === 'ok') setNote(response.data);
     }, [response])
 
+    const { ref: ref, isSupported: fullscreenSupported, isFullscreen, toggle: toggleFullscreen, } = useFullscreen<HTMLFormElement>();
     const { isSupported: pipWindowSupported, open: openPiP, pipWindow } = usePiP();
 
     const { Navigator, Aside, Comments, Dialog, PipFallback } = Element;
@@ -74,18 +75,22 @@ const Page = () => {
 
         if (note) {
             const noteContent = <Form.Note.TextUpdate
+                ref={ref}
                 token={token}
                 note={note}
                 setNote={setNote}
                 author={note.user ? note.user.username : null}
                 currentUser={user ? user.username : null}
+                fullscreenSupported={fullscreenSupported}
+                isFullscreen={isFullscreen}
+                toggleFullscreen={toggleFullscreen}
                 pipWindowSupported={pipWindowSupported}
                 pipWindow={pipWindow}
                 openPiP={openPiP}
             />
             return (
                 <section className="max-w-[999px] w-full m-auto pb-64">
-                    <Navigator />
+                    <Navigator isFullscreen={isFullscreen} pipWindow={pipWindow} />
                     <section className="flex inlg:flex-col-reverse">
                         <Template.Portal blur="sm" triggerRef={triggerRef} childRef={childRef} closeRef={closeRef}>
                             <Form.Note.Update

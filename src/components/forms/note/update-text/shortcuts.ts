@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 
 interface ShortcutsProps {
-    rootRef: React.RefObject<HTMLElement | null>;
+    ref: React.RefObject<HTMLElement | null>;
     isAuthor: boolean;
     isEditing: boolean;
+    onFullscreen: () => void;
     onPictureInPicture: () => void;
     onStartEdit: () => void;
     onCancel: () => void;
@@ -11,7 +12,7 @@ interface ShortcutsProps {
     onSave: () => void;
 }
 
-export const useShortcuts = ({ rootRef, isAuthor, isEditing, onPictureInPicture, onStartEdit, onCancel, onDelete, onSave }: ShortcutsProps) => {
+export const useShortcuts = ({ ref, isAuthor, isEditing, onFullscreen, onPictureInPicture, onStartEdit, onCancel, onDelete, onSave }: ShortcutsProps) => {
 
     const scrollToNote = () => {
         const noteEl = document.getElementById('note');
@@ -26,6 +27,7 @@ export const useShortcuts = ({ rootRef, isAuthor, isEditing, onPictureInPicture,
         if (!e.altKey) return;
         switch (e.key.toLowerCase()) {
             case "c": e.preventDefault(); scrollToNote(); break;
+            case "z": e.preventDefault(); onFullscreen(); break;
             case "x": e.preventDefault(); onPictureInPicture(); break;
         }
     }
@@ -52,7 +54,7 @@ export const useShortcuts = ({ rootRef, isAuthor, isEditing, onPictureInPicture,
     }, [isEditing])
 
     useEffect(() => {
-        const doc = rootRef.current ? rootRef.current.ownerDocument : document;
+        const doc = ref.current ? ref.current.ownerDocument : document;
         doc.addEventListener("keydown", handleGlobalKeyDown);
         doc.addEventListener("keydown", handleAuthorKeyDown);
         return () => {
