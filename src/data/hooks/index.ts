@@ -18,3 +18,4 @@ export * from './useSubscriptions';
 export * from './useTags';
 export * from './useUser';
 export * from './usePiP';
+export * from './useFullscreen';
