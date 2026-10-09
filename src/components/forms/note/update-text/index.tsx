@@ -195,7 +195,7 @@ export const Form = ({ ref, token, note, setNote, author, currentUser, fullscree
                 onSubmit={handleSubmit(onSubmit)}
                 className={clsx(
                     'scroll-mt-[9vh] inmd:scroll-mt-0',
-                    'flex flex-col flex-1 dark:bg-darker bg-lighter',
+                    'min-w-0 flex flex-col flex-1 dark:bg-darker bg-lighter',
                     isFullscreen
                         ? 'h-screen w-screen'
                         : [
@@ -210,8 +210,9 @@ export const Form = ({ ref, token, note, setNote, author, currentUser, fullscree
                 {...rest}
             >
                 <header className="px-4 inmd:px-2 flex items-center justify-between gap-3 border-b dark:border-middark/50 border-midlight/50">
-                    <div className="insm:overflow-hidden w-fit flex gap-3">
+                    <div className="overflow-hidden w-fit flex gap-3">
                         <Title
+                            title={note.name}
                             disabled={!isPreviewing}
                             onClick={togglePreview}
                             isPreviewing={isPreviewing}

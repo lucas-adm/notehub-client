@@ -15,7 +15,6 @@ export const ActionButton = ({ skipAuthorityCheck = false, isAuthor = false, isE
             className={clsx(
                 'disabled:cursor-not-allowed',
                 'group relative p-1 rounded-full',
-                'dark:drop-shadow-alpha-l-sm drop-shadow-alpha-d-sm',
                 'transition-colors',
                 isEditing ? 'block' : 'hidden',
                 className
