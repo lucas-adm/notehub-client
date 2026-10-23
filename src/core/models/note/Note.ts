@@ -13,9 +13,10 @@ export interface Note {
     modified: boolean;
     closed: boolean;
     hidden: boolean;
+    encrypted: boolean;
     markdown: string;
     comments_count: number;
     flames_count: number;
 }
 
-export type LowDetailNote = Omit<Note, 'markdown'>;
+export type LowDetailNote = Omit<Note, 'markdown' | 'encrypted'>;
