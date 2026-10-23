@@ -1,5 +1,5 @@
 import { ApiError } from '@/api';
-import { CreateNoteFormData, createNoteFormSchema, handleFieldErrors } from '@/core';
+import { CreateNoteFormData, createNoteFormSchema, createNoteFormSchemaRefined, encrypt, handleFieldErrors } from '@/core';
 import { Element } from './elements';
 import { FormProvider, useForm } from 'react-hook-form';
 import { IconEyeClosed, IconMessage, IconMessageOff, IconWorld } from '@tabler/icons-react';
@@ -24,8 +24,13 @@ export const Form = ({ token, username }: { token: string; username: string; }) 
         [username, notes]
     )
 
+    const refinedSchema = useMemo(() =>
+        createNoteFormSchemaRefined(username, (notes ?? []).map((n) => n.name)),
+        [username, notes]
+    )
+
     const createNoteForm = useForm<CreateNoteFormData>({
-        resolver: zodResolver(schema),
+        resolver: zodResolver(refinedSchema),
         mode: 'onChange',
     })
 
@@ -38,7 +43,11 @@ export const Form = ({ token, username }: { token: string; username: string; }) 
     const onSubmit = async (data: CreateNoteFormData): Promise<void> => {
         try {
             setIsPending(true);
-            const note = await withProgress(() => createNote(token, data));
+            const { passphrase, ...rest } = data;
+            const payload = rest.encrypted
+                ? { ...rest, markdown: await encrypt(rest.markdown ?? '', passphrase!) }
+                : rest;
+            const note = await withProgress(() => createNote(token, payload));
             await Promise.all([
                 qc.invalidateQueries({ queryKey: ['userNotes', token, username] }),
                 qc.invalidateQueries({ queryKey: ['userTags', token, username] }),
@@ -55,16 +64,16 @@ export const Form = ({ token, username }: { token: string; username: string; }) 
         }
     }
 
-    const { Section, Fieldset, FileFieldset, Legend, Label, Owner, InputText, InputRadio, Error, Info, Submit } = Element;
+    const { Section, Fieldset, EncryptionFieldset, FileFieldset, Legend, Label, Owner, InputPassword, InputText, InputRadio, Error, Info, Submit } = Element;
 
     return (
         <FormProvider {...createNoteForm}>
             <form
                 onSubmit={handleSubmit(onSubmit)}
-                className='w-full h-full flex flex-col'
+                className='w-full h-full flex-1 flex flex-col'
             >
                 <Section>
-                    <h2 className='pl-1 text-sm dark:text-midlight/65 text-middark/65'>
+                    <h2 className='text-sm dark:text-midlight/65 text-middark/65'>
                         Campos obrigatórios estão marcados com *
                     </h2>
                 </Section>
@@ -73,17 +82,18 @@ export const Form = ({ token, username }: { token: string; username: string; }) 
                         <Label htmlFor='name' tip='*' className='block'>Título</Label>
                         <div className='my-2 flex insm:flex-col items-center insm:items-start gap-2'>
                             <Owner aria-hidden='true' />
-                            <InputText schema={schema} autoFocus required name='name' />
+                            <InputText schema={schema} autoFocus name='name' />
                         </div>
                         <Error field='name' />
                     </Fieldset>
                     <Fieldset className='relative'>
                         <Label htmlFor='description' tip='(opcional)' className='block'>Descrição</Label>
-                        <InputText schema={schema} name='description' />
+                        <InputText schema={schema} name='description' className='my-1' />
                         <Error field='description' />
                     </Fieldset>
                 </Section>
-                <Section className='gap-6'>
+                <Section className='gap-3'>
+                    <EncryptionFieldset />
                     <Fieldset className='p-2 pb-4 rounded-md border dark:border-middark border-midlight'>
                         <Legend tip='*'>Visiblidade</Legend>
                         <InputRadio id='hiddenFalse' name='hidden' value='false' defaultChecked />
@@ -99,13 +109,13 @@ export const Form = ({ token, username }: { token: string; username: string; }) 
                         <Label htmlFor='closedTrue' icon={IconMessageOff} className='cursor-pointer'>Fechados</Label>
                     </Fieldset>
                 </Section>
-                <Section className='flex-1'>
+                <Section>
                     <FileFieldset name='markdown'>
                         <Legend tip='(opcional)'>Carregar nota</Legend>
                     </FileFieldset>
                 </Section>
-                <Section>
-                    <Info name='hidden' />
+                <Section className='flex-1'>
+                    <Info />
                     <Submit disabled={isPending}>Criar nota</Submit>
                 </Section>
             </form>
