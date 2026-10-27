@@ -1,19 +1,21 @@
 import { clsx } from 'clsx';
+import { decrypt, encrypt, Note, NoteTextUpdateFormData, noteTextUpdateFormSchema, Token, UpdateNotePassphraseFormData, updateNotePassphraseFormSchema } from "@/core"
 import { Element } from "./elements";
 import { FormProvider, useForm } from "react-hook-form";
-import { IconArrowsMaximize, IconArrowsMinimize, IconCheck, IconDotsVertical, IconEdit, IconHistory, IconPictureInPicture, IconTrash, IconX } from "@tabler/icons-react";
+import { IconArrowsMaximize, IconArrowsMinimize, IconCheck, IconDotsVertical, IconEdit, IconHistory, IconKey, IconPictureInPicture, IconTrash, IconX } from "@tabler/icons-react";
 import { Menu, MenuItem } from "@/components/menu";
-import { Note, NoteTextUpdateFormData, noteTextUpdateFormSchema, Token } from "@/core"
 import { useApi, useDrafts, useNotes, useTags } from "@/data/hooks";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from "next/navigation";
 import { useShortcuts } from './shortcuts';
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
     ref: React.RefObject<HTMLFormElement>;
     token: Token | null;
+    passphrase: string | null;
+    setPassphrase: React.Dispatch<React.SetStateAction<string | null>>;
     note: Note;
     setNote: React.Dispatch<React.SetStateAction<Note | null>>;
     author: string | null;
@@ -26,7 +28,7 @@ interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
     openPiP: (width?: number, height?: number) => Promise<void>
 }
 
-export const Form = ({ ref, token, note, setNote, author, currentUser, fullscreenSupported, isFullscreen, toggleFullscreen, pipWindowSupported, pipWindow, openPiP, ...rest }: FormProps) => {
+export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, author, currentUser, fullscreenSupported, isFullscreen, toggleFullscreen, pipWindowSupported, pipWindow, openPiP, ...rest }: FormProps) => {
 
     const {
         noteService: { updateNoteText, deleteNote },
@@ -49,35 +51,54 @@ export const Form = ({ ref, token, note, setNote, author, currentUser, fullscree
 
     const { handleSubmit, setValue } = updateNoteForm;
 
+    const passphraseForm = useForm<UpdateNotePassphraseFormData>({
+        resolver: zodResolver(updateNotePassphraseFormSchema),
+        defaultValues: { passphrase: '' },
+    })
+
+    const {
+        handleSubmit: handlePassphraseSubmit,
+        setError: setPassphraseError,
+        reset: resetPassphraseForm,
+    } = passphraseForm;
+
     const isAuthor = author ? author === currentUser : false;
 
     const [initialText, setInitialText] = useState<string>(note.markdown ?? "");
     const [text, setText] = useState<string>(initialText);
-    const [skipDraft, setSkipDraft] = useState<boolean>(draft ? false : true);
+    const [skipDraft, setSkipDraft] = useState<boolean>(note.encrypted ? true : draft ? false : true);
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+    const [isDecrypting, setIsDecrypting] = useState<boolean>(false);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [isPreviewing, setIsPreviewing] = useState<boolean>(false);
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
-    const [isSubmiting, setIsSubmiting] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [isPending, setIsPending] = useState<boolean>(false);
+    const pendingEdit = useRef<boolean>(false);
 
     const router = useRouter();
 
     const onSubmit = async (data: NoteTextUpdateFormData): Promise<void> => {
         if (token) {
+            if (note.encrypted) if (!passphrase) return startDecryption();
             setIsPending(true);
-            await withProgress(() => updateNoteText(token.access_token, note.id, data))
-                .then(() => {
-                    setIsSubmiting(false);
-                    setIsEditing(false);
-                    setNote(prev => prev ? { ...prev, markdown: data.markdown } : null);
-                    setText(data.markdown);
-                    setInitialText(data.markdown);
-                    setIsPreviewing(false);
-                    setNoteToFirst(note.id);
-                    setIsPending(false);
-                    if (note.user) removeDraft('notes', note.id, note.user.username);
-                })
+            await withProgress(async () => updateNoteText(
+                token.access_token,
+                note.id,
+                note.encrypted
+                    ? { ...data, markdown: await encrypt(data.markdown, passphrase!) }
+                    : data
+            )).then(() => {
+                setIsSubmitting(false);
+                setIsEditing(false);
+                setNote(prev => prev ? { ...prev, markdown: data.markdown } : null);
+                setText(data.markdown);
+                setInitialText(data.markdown);
+                setIsPreviewing(false);
+                setNoteToFirst(note.id);
+                setIsPending(false);
+                if (note.user) removeDraft('notes', note.id, note.user.username);
+            })
             return await qc.invalidateQueries({ queryKey: ['note', token.access_token, note.id] });
         }
     }
@@ -116,16 +137,48 @@ export const Form = ({ ref, token, note, setNote, author, currentUser, fullscree
         return;
     }
 
-    const startEdit = (e?: React.MouseEvent) => {
+    const startDecryption = (e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
+        if (passphrase) return;
+        setIsMenuOpen(false);
+        setIsDecrypting(true);
+        return;
+    }
+
+    const handleDecryption = async (data: UpdateNotePassphraseFormData, e?: React.BaseSyntheticEvent) => {
+        if (e) e.stopPropagation();
+        try {
+            const decrypted = await decrypt(note.markdown, data.passphrase);
+            resetPassphraseForm();
+            setPassphrase(data.passphrase);
+            setInitialText(decrypted);
+            setText(decrypted);
+            setValue('markdown', decrypted);
+            setNote((prev) => prev ? { ...prev, markdown: decrypted } : null);
+            if (pendingEdit.current) enterEdition();
+            return setIsDecrypting(false);
+        } catch {
+            setPassphraseError('passphrase', { message: 'Segredo incorreto.' });
+        }
+    }
+
+    const enterEdition = () => {
         setIsEditing(true);
         setIsPreviewing(false);
-        return;
+    }
+
+    const startEdit = (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        if (note.encrypted) if (!passphrase) {
+            pendingEdit.current = true;
+            return startDecryption();
+        }
+        return enterEdition();
     }
 
     const startSubmit = (e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
-        setIsSubmiting(true);
+        setIsSubmitting(true);
         return;
     }
 
@@ -149,6 +202,7 @@ export const Form = ({ ref, token, note, setNote, author, currentUser, fullscree
     }
 
     const saveDraft = (content: string) => {
+        if (note.encrypted) return;
         if (isAuthor && note.user) {
             if (content === initialText) return;
             setSkipDraft(true);
@@ -172,6 +226,10 @@ export const Form = ({ ref, token, note, setNote, author, currentUser, fullscree
         setIsPreviewing(false);
         return;
     }
+
+    useEffect(() => {
+        if (!isDecrypting) pendingEdit.current = false;
+    }, [isDecrypting])
 
     useShortcuts({
         ref,
@@ -294,6 +352,21 @@ export const Form = ({ ref, token, note, setNote, author, currentUser, fullscree
                             className="relative dark:hover:bg-semilight/10 hover:bg-semidark/10 dark:focus:bg-semilight/10 focus:bg-semidark/10"
                         >
                             <Menu isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen}>
+                                {note.encrypted
+                                    ? <MenuItem
+                                        onClick={startDecryption}
+                                        icon={IconKey}
+                                        className={clsx(
+                                            passphrase
+                                                ? '!cursor-default dark:text-secondary text-primary'
+                                                : 'dark:text-light text-dark',
+                                            'dark:hover:text-secondary hover:text-primary',
+                                        )}
+                                    >
+                                        Criptografia
+                                    </MenuItem>
+                                    : null
+                                }
                                 <MenuItem
                                     onClick={startEdit}
                                     icon={IconEdit}
@@ -312,6 +385,24 @@ export const Form = ({ ref, token, note, setNote, author, currentUser, fullscree
                         </ActionButton>
                     </div>
                 </header>
+                <FormProvider {...passphraseForm}>
+                    <Dialog
+                        msg="Insira o segredo."
+                        desc="Sua chave secreta não será enviada aos nossos servidores em nenhuma circunstância."
+                        usePassphrase
+                        opt="Concluir"
+                        type="button"
+                        isOpen={isDecrypting}
+                        setIsOpen={setIsDecrypting}
+                        disabled={isPending}
+                        onClick={handlePassphraseSubmit(handleDecryption)}
+                        onEnter={handlePassphraseSubmit(handleDecryption)}
+                        className="dark:text-secondary text-primary
+                        dark:hover:bg-secondary hover:bg-primary
+                        dark:focus-visible:bg-secondary focus-visible:bg-primary
+                        dark:disabled:bg-secondary disabled:bg-primary"
+                    />
+                </FormProvider>
                 <Dialog
                     msg="Tem certeza de que deseja apagar esta nota?"
                     desc="Esta ação é irreversível e todos os dados serão perdidos permanentemente."
@@ -323,6 +414,7 @@ export const Form = ({ ref, token, note, setNote, author, currentUser, fullscree
                     onClick={handleDeleteNote}
                     className="dark:text-red-500 text-red-600
                     dark:hover:bg-red-500 hover:bg-red-600
+                    dark:focus-visible:bg-red-500 focus-visible:bg-red-600
                     dark:disabled:bg-red-500 disabled:bg-red-600"
                 />
                 <Dialog
@@ -330,11 +422,12 @@ export const Form = ({ ref, token, note, setNote, author, currentUser, fullscree
                     desc="A atualização sobrescreverá o conteúdo atual. Não é possível desfazer esta operação."
                     opt="Sim, atualizar"
                     type="submit"
-                    isOpen={isSubmiting}
-                    setIsOpen={setIsSubmiting}
+                    isOpen={isSubmitting}
+                    setIsOpen={setIsSubmitting}
                     disabled={isPending}
                     className="dark:text-secondary text-primary
                     dark:hover:bg-secondary hover:bg-primary
+                    dark:focus-visible:bg-secondary focus-visible:bg-primary
                     dark:disabled:bg-secondary disabled:bg-primary"
                 />
                 <MdPreview

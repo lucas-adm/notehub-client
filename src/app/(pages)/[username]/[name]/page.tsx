@@ -24,6 +24,7 @@ const Page = () => {
     const { data: response, isLoading } = useGetNote(token ? token.access_token : null, username, name, isMounted);
 
     const [note, setNote] = useState<Note | null>(null);
+    const [passphrase, setPassphrase] = useState<string | null>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const childRef = useRef<HTMLFormElement>(null);
     const closeRef = useRef<HTMLButtonElement>(null);
@@ -82,6 +83,8 @@ const Page = () => {
             const noteContent = <Form.Note.TextUpdate
                 ref={ref}
                 token={token}
+                passphrase={passphrase}
+                setPassphrase={setPassphrase}
                 note={note}
                 setNote={setNote}
                 author={note.user ? note.user.username : null}
