@@ -4,6 +4,7 @@ import { Fieldset } from "./Fieldset";
 import { InputCheck } from "./InputCheck";
 import { InputTags } from "./InputTags";
 import { InputText } from "./InputText";
+import { InputPassword } from './InputPassword';
 import { Label } from "./Label";
 import { Tag } from "./Tag";
 import { TagsList } from "./TagsList";
@@ -14,6 +15,7 @@ export const Element = {
     Label,
     InputText,
     InputTags,
+    InputPassword,
     Tag,
     TagsList,
     TagsListItem,
