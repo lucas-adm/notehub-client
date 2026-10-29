@@ -105,6 +105,8 @@ const Page = () => {
                                 ref={childRef}
                                 closeRef={closeRef}
                                 token={token}
+                                passphrase={passphrase}
+                                setPassphrase={setPassphrase}
                                 note={note}
                                 setNote={setNote}
                             />
