@@ -9,8 +9,7 @@ export const createNoteUpdateFormSchema = (username: User['username'], existingN
         .max(255, 'Máximo de 255 caracteres.'),
     markdown: z
         .string()
-        .nullable()
-        .optional(),
+        .nullable(),
     hidden: z.boolean(),
     closed: z.boolean(),
     encrypted: z.boolean(),

@@ -1,9 +1,9 @@
 'use client';
 
 import { createPortal } from 'react-dom';
+import { decrypt, handleFieldErrorsMsg, Note } from "@/core";
 import { Element } from "./elements";
 import { Form } from "@/components/forms";
-import { handleFieldErrorsMsg, Note } from "@/core";
 import { IconEyeOff, IconLock, IconNotesOff, IconPictureInPicture } from "@tabler/icons-react";
 import { Section } from "../components/Section";
 import { Skeleton } from "./skeleton";
@@ -25,15 +25,43 @@ const Page = () => {
 
     const [note, setNote] = useState<Note | null>(null);
     const [passphrase, setPassphrase] = useState<string | null>(null);
+    const [pendingConfiguration, setPendingConfiguration] = useState<boolean>(false);
+    const [onConfiguration, setOnConfiguration] = useState<boolean>(false);
+    const [pendingEdition, setPendingEdition] = useState<boolean>(false);
+    const [onEdition, setOnEdition] = useState<boolean>(false);
+    const passphraseRef = useRef<string | null>(null);
+    passphraseRef.current = passphrase;
     const triggerRef = useRef<HTMLButtonElement>(null);
     const childRef = useRef<HTMLFormElement>(null);
     const closeRef = useRef<HTMLButtonElement>(null);
 
+    const enterConfiguration = () => {
+        if (!note) return;
+        if (note.encrypted) if (!passphrase) return setPendingConfiguration(true);
+        setOnConfiguration(true);
+    }
+
     useEffect(() => {
         if (response && response.type === 'ok') {
-            const { user, name } = response.data;
-            setNote(response.data);
-            setTitle(user ? `${user.username}/${name}` : name);
+            let cancelled = false;
+            (async () => {
+                let note = response.data;
+                const secret = passphraseRef.current;
+                if (note.encrypted && note.markdown && secret) {
+                    try {
+                        note = {
+                            ...note,
+                            markdown: await decrypt(note.markdown, secret),
+                        }
+                    } catch {
+                        setPassphrase(null);
+                    }
+                }
+                if (cancelled) return;
+                setNote(note);
+                setTitle(note.user ? `${note.user.username}/${note.name}` : note.name);
+            })();
+            return () => { cancelled = true };
         }
     }, [response])
 
@@ -85,6 +113,14 @@ const Page = () => {
                 token={token}
                 passphrase={passphrase}
                 setPassphrase={setPassphrase}
+                pendingConfiguration={pendingConfiguration}
+                setPendingConfiguration={setPendingConfiguration}
+                onConfiguration={onConfiguration}
+                setOnConfiguration={setOnConfiguration}
+                pendingEdition={pendingEdition}
+                setPendingEdition={setPendingEdition}
+                onEdition={onEdition}
+                setOnEdition={setOnEdition}
                 note={note}
                 setNote={setNote}
                 author={note.user ? note.user.username : null}
@@ -100,7 +136,15 @@ const Page = () => {
                 <section className="max-w-[999px] w-full m-auto pb-64">
                     <Navigator isFullscreen={isFullscreen} pipWindow={pipWindow} />
                     <section className="flex inlg:flex-col-reverse">
-                        <Template.Portal blur="sm" triggerRef={triggerRef} childRef={childRef} closeRef={closeRef}>
+                        <Template.Portal
+                            blur="sm"
+                            triggerRef={triggerRef}
+                            childRef={childRef}
+                            closeRef={closeRef}
+                            action={enterConfiguration}
+                            customState={onConfiguration}
+                            setCustomState={setOnConfiguration}
+                        >
                             <Form.Note.Update
                                 ref={childRef}
                                 closeRef={closeRef}
@@ -124,6 +168,7 @@ const Page = () => {
                             note={note}
                             author={note.user ? note.user.username : null}
                             currentUser={user ? user.username : null}
+                            isEditing={onEdition}
                         />
                     </section>
                     <section className="w-[72.5%] inlg:w-full inmd:px-2 py-2">

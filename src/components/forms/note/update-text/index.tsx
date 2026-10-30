@@ -5,7 +5,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { IconArrowsMaximize, IconArrowsMinimize, IconCheck, IconDotsVertical, IconEdit, IconHistory, IconKey, IconPictureInPicture, IconTrash, IconX } from "@tabler/icons-react";
 import { Menu, MenuItem } from "@/components/menu";
 import { useApi, useDrafts, useNotes, useTags } from "@/data/hooks";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from "next/navigation";
 import { useShortcuts } from './shortcuts';
@@ -16,6 +16,14 @@ interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
     token: Token | null;
     passphrase: string | null;
     setPassphrase: React.Dispatch<React.SetStateAction<string | null>>;
+    pendingConfiguration: boolean;
+    setPendingConfiguration: React.Dispatch<React.SetStateAction<boolean>>;
+    onConfiguration: boolean;
+    setOnConfiguration: React.Dispatch<React.SetStateAction<boolean>>;
+    pendingEdition: boolean;
+    setPendingEdition: React.Dispatch<React.SetStateAction<boolean>>;
+    onEdition: boolean;
+    setOnEdition: React.Dispatch<React.SetStateAction<boolean>>;
     note: Note;
     setNote: React.Dispatch<React.SetStateAction<Note | null>>;
     author: string | null;
@@ -28,7 +36,31 @@ interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
     openPiP: (width?: number, height?: number) => Promise<void>
 }
 
-export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, author, currentUser, fullscreenSupported, isFullscreen, toggleFullscreen, pipWindowSupported, pipWindow, openPiP, ...rest }: FormProps) => {
+export const Form = ({
+    ref,
+    token,
+    passphrase,
+    setPassphrase,
+    pendingConfiguration,
+    onConfiguration,
+    setPendingConfiguration,
+    setOnConfiguration,
+    pendingEdition,
+    setPendingEdition,
+    onEdition,
+    setOnEdition,
+    note,
+    setNote,
+    author,
+    currentUser,
+    fullscreenSupported,
+    isFullscreen,
+    toggleFullscreen,
+    pipWindowSupported,
+    pipWindow,
+    openPiP,
+    ...rest
+}: FormProps) => {
 
     const {
         noteService: { updateNoteText, deleteNote },
@@ -69,12 +101,10 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
     const [skipDraft, setSkipDraft] = useState<boolean>(note.encrypted ? true : draft ? false : true);
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
     const [isDecrypting, setIsDecrypting] = useState<boolean>(false);
-    const [isEditing, setIsEditing] = useState<boolean>(false);
     const [isPreviewing, setIsPreviewing] = useState<boolean>(false);
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [isPending, setIsPending] = useState<boolean>(false);
-    const pendingEdit = useRef<boolean>(false);
 
     const router = useRouter();
 
@@ -90,7 +120,7 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
                     : data
             )).then(() => {
                 setIsSubmitting(false);
-                setIsEditing(false);
+                setOnEdition(false);
                 setNote(prev => prev ? { ...prev, markdown: data.markdown } : null);
                 setText(data.markdown);
                 setInitialText(data.markdown);
@@ -147,7 +177,7 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
 
     const handleDecryption = async (data: UpdateNotePassphraseFormData, e?: React.BaseSyntheticEvent) => {
         if (e) e.stopPropagation();
-        try {
+        if (note.markdown) try {
             const decrypted = await decrypt(note.markdown, data.passphrase);
             resetPassphraseForm();
             setPassphrase(data.passphrase);
@@ -155,25 +185,25 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
             setText(decrypted);
             setValue('markdown', decrypted);
             setNote((prev) => prev ? { ...prev, markdown: decrypted } : null);
-            if (pendingEdit.current) enterEdition();
+            if (pendingConfiguration) setOnConfiguration(true);
+            if (pendingEdition) {
+                setOnEdition(true);
+                setIsPreviewing(false);
+            }
             return setIsDecrypting(false);
         } catch {
             setPassphraseError('passphrase', { message: 'Segredo incorreto.' });
         }
     }
 
-    const enterEdition = () => {
-        setIsEditing(true);
-        setIsPreviewing(false);
-    }
-
     const startEdit = (e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
         if (note.encrypted) if (!passphrase) {
-            pendingEdit.current = true;
+            setPendingEdition(true);
             return startDecryption();
         }
-        return enterEdition();
+        setOnEdition(true);
+        setIsPreviewing(false);
     }
 
     const startSubmit = (e?: React.MouseEvent) => {
@@ -195,7 +225,7 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
             setSkipDraft(true);
             setValue('markdown', draft.content);
             setText(draft.content);
-            setIsEditing(true);
+            setOnEdition(true);
             setIsPreviewing(false);
         }
         return;
@@ -222,19 +252,26 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
         setSkipDraft(false);
         setValue('markdown', initialText);
         setText(initialText);
-        setIsEditing(false);
+        setOnEdition(false);
         setIsPreviewing(false);
         return;
     }
 
     useEffect(() => {
-        if (!isDecrypting) pendingEdit.current = false;
+        if (pendingConfiguration) startDecryption();
+    }, [pendingConfiguration])
+
+    useEffect(() => {
+        if (!isDecrypting) {
+            setPendingConfiguration(false);
+            setPendingEdition(false);
+        }
     }, [isDecrypting])
 
     useShortcuts({
         ref,
         isAuthor,
-        isEditing,
+        isEditing: onEdition,
         onFullscreen: toggleFullscreen,
         onPictureInPicture: openPictureInPicture,
         onStartEdit: startEdit,
@@ -275,24 +312,24 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
                             onClick={togglePreview}
                             isPreviewing={isPreviewing}
                         >
-                            {isEditing ? "Editar" : note.name}
+                            {onEdition ? "Editar" : note.name}
                         </Title>
                         <EditingTitle
                             disabled={isPreviewing}
                             onClick={togglePreview}
                             isPreviewing={isPreviewing}
-                            isEditing={isEditing}
+                            isEditing={onEdition}
                         >
                             Visualizar
                         </EditingTitle>
                     </div>
                     <div className="flex gap-3">
-                        {skipDraft ? null :
+                        {note.encrypted || skipDraft ? null :
                             <ActionButton
                                 isAuthor={isAuthor}
                                 type="button"
                                 onClick={startDraft}
-                                isEditing={isEditing}
+                                isEditing={onEdition}
                                 icon={IconHistory}
                                 tooltip="Rascunho"
                                 className="dark:bg-semilight/20 bg-semidark/20 dark:hover:bg-semilight/10 hover:bg-semidark/10"
@@ -302,7 +339,7 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
                             isAuthor={isAuthor}
                             type="button"
                             onClick={cancelEdit}
-                            isEditing={isEditing}
+                            isEditing={onEdition}
                             icon={IconX}
                             tooltip="Cancelar"
                             className="dark:bg-semilight/20 bg-semidark/20 dark:hover:bg-semilight/10 hover:bg-semidark/10"
@@ -312,7 +349,7 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
                                 skipAuthorityCheck
                                 type="button"
                                 onClick={toggleFullscreen}
-                                isEditing={!isEditing}
+                                isEditing={!onEdition}
                                 icon={isFullscreen ? IconArrowsMinimize : IconArrowsMaximize}
                                 tooltip={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
                                 className="dark:hover:bg-semilight/10 hover:bg-semidark/10 dark:focus:bg-semilight/10 focus:bg-semidark/10"
@@ -324,7 +361,7 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
                                 skipAuthorityCheck
                                 type="button"
                                 onClick={openPictureInPicture}
-                                isEditing={!isEditing}
+                                isEditing={!onEdition}
                                 icon={IconPictureInPicture}
                                 tooltip="Picture-in-Picture"
                                 className="dark:hover:bg-semilight/10 hover:bg-semidark/10 dark:focus:bg-semilight/10 focus:bg-semidark/10"
@@ -335,7 +372,7 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
                             isAuthor={isAuthor}
                             type="button"
                             onClick={startSubmit}
-                            isEditing={isEditing}
+                            isEditing={onEdition}
                             icon={IconCheck}
                             tooltip="Salvar"
                             className="text-white bg-primary hover:bg-secondary"
@@ -346,7 +383,7 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
                             disabled={isPending}
                             onClick={toggleMenu}
                             onBlur={closeMenu}
-                            isEditing={!isEditing}
+                            isEditing={!onEdition}
                             icon={IconDotsVertical}
                             tooltip="Menu"
                             className="relative dark:hover:bg-semilight/10 hover:bg-semidark/10 dark:focus:bg-semilight/10 focus:bg-semidark/10"
@@ -431,13 +468,13 @@ export const Form = ({ ref, token, passphrase, setPassphrase, note, setNote, aut
                     dark:disabled:bg-secondary disabled:bg-primary"
                 />
                 <MdPreview
-                    isEditing={isEditing}
+                    isEditing={onEdition}
                     isPreviewing={isPreviewing}
                     isFullscreen={isFullscreen}
                     markdown={isPreviewing ? text : initialText}
                 />
                 <MdEditor
-                    isEditing={isEditing}
+                    isEditing={onEdition}
                     isPreviewing={isPreviewing}
                     onDraftChange={saveDraft}
                     setText={setText}

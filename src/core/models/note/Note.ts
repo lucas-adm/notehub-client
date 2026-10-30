@@ -14,7 +14,7 @@ export interface Note {
     closed: boolean;
     hidden: boolean;
     encrypted: boolean;
-    markdown: string;
+    markdown: string | null;
     comments_count: number;
     flames_count: number;
 }

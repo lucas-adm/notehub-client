@@ -64,6 +64,10 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(({ onPortalClose, clo
 
     const onSubmit = async (data: NoteUpdateFormData): Promise<void> => {
         if (token && note.user) {
+            if (note.encrypted) if (!passphrase) return setError(
+                'passphrase',
+                { message: 'Descriptografe a nota.' },
+            )
             try {
                 setIsPending(true);
                 const { passphrase, ...rest } = data;
@@ -86,7 +90,7 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(({ onPortalClose, clo
                         ...prev,
                         name: payload.name,
                         description: payload.description,
-                        markdown: payload.markdown ?? prev.markdown,
+                        markdown: rest.markdown,
                         tags: payload.tags,
                         closed: payload.closed,
                         hidden: payload.hidden,
@@ -97,7 +101,7 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(({ onPortalClose, clo
                     return null
                 })
                 onPortalClose?.();
-                router.push(`/${note.user.username}/${payload.name}`);
+                return router.push(`/${note.user.username}/${payload.name}`);
             } catch (error) {
                 const { data } = error as ApiError;
                 if (Array.isArray(data)) handleFieldErrors(data, setError);
