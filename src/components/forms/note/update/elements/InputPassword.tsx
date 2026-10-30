@@ -68,17 +68,19 @@ export const InputPassword = ({ name, defaultValue, ...rest }: Props) => {
                             : [
                                 'dark:bg-transparent bg-transparent',
                                 'dark:border-middark border-midlight',
-                                'dark:focus:border-secondary focus:border-primary',
-                                'dark:focus-visible:border-secondary focus-visible:border-primary',
                             ],
                         hasError
                             ? [
                                 'dark:text-red-500 text-red-600',
                                 'dark:focus:border-red-500 focus:border-red-600',
                                 'dark:focus-visible:border-red-500 focus-visible:border-red-600',
-                                'dark:selection:bg-red-500 selection:bg-red-600',
+                                'dark:selection:!bg-red-500 selection:!bg-red-600',
                             ]
-                            : 'dark:selection:bg-secondary selection:bg-primary',
+                            : [
+                                'dark:selection:bg-secondary selection:bg-primary',
+                                'dark:focus:border-secondary focus:border-primary',
+                                'dark:focus-visible:border-secondary focus-visible:border-primary',
+                            ],
                     )}
                 />
                 <button
